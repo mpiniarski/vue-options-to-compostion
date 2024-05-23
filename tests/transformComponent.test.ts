@@ -8,22 +8,62 @@ type TestCase = {
 };
 
 const testCases: TestCase[] = [
+     // Props test cases
     {
-        name: 'transforms props correctly',
+        name: 'transforms props correctly with various types and defaults',
         optionsAPIScript: `
             import { defineComponent } from 'vue';
 
             export default defineComponent({
                 props: {
-                    message: String
+                    message: String,
+                    count: {
+                        type: Number,
+                        default: 0
+                    },
+                    isActive: {
+                        type: Boolean,
+                        default: false
+                    },
+                    user: {
+                        type: Object,
+                        required: false
+                    }
                 }
             });
         `,
         expectedCompositionAPIScript: `
             <script setup>
             const props = defineProps({
-                message: String
+                message: String,
+                count: {
+                    type: Number,
+                    default: 0
+                },
+                isActive: {
+                    type: Boolean,
+                    default: false
+                },
+                user: {
+                    type: Object,
+                    required: false
+                }
             });
+            </script>
+        `
+    },
+    {
+        name: 'transforms props correctly when provided as an array of strings',
+        optionsAPIScript: `
+            import { defineComponent } from 'vue';
+
+            export default defineComponent({
+                props: ['message', 'count', 'isActive', 'user']
+            });
+        `,
+        expectedCompositionAPIScript: `
+            <script setup>
+            const props = defineProps(['message', 'count', 'isActive', 'user']);
             </script>
         `
     },
