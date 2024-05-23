@@ -2,7 +2,6 @@ import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import generate from '@babel/generator';
-import prettier from 'prettier';
 
 // Define the ComponentOption type
 type ComponentOption = {
@@ -20,9 +19,9 @@ const componentOptions: ComponentOption[] = [
         name: 'computed',
         transform: (value: t.ObjectExpression) => {
             return value.properties.map(prop => {
-                if (t.isObjectProperty(prop) && t.isFunctionExpression(prop.value)) {
+                if (t.isObjectMethod(prop)) {
                     const computedName = (prop.key as t.Identifier).name;
-                    const computedBody = prop.value.body;
+                    const computedBody = prop.body;
                     return `const ${computedName} = computed(() => ${generate(computedBody).code});`;
                 }
                 return '';
@@ -36,7 +35,7 @@ const componentOptions: ComponentOption[] = [
                 if (t.isObjectMethod(prop)) {
                     const methodName = (prop.key as t.Identifier).name;
                     const methodBody = prop.body;
-                    return `function ${methodName} ${generate(methodBody).code}`;
+                    return `function ${methodName}() ${generate(methodBody).code}`;
                 }
                 return '';
             }).join('\n');
@@ -46,9 +45,9 @@ const componentOptions: ComponentOption[] = [
         name: 'watch',
         transform: (value: t.ObjectExpression) => {
             return value.properties.map(prop => {
-                if (t.isObjectProperty(prop) && t.isFunctionExpression(prop.value)) {
-                    const watchName = (prop.key as t.StringLiteral).value;
-                    const watchHandler = prop.value.body;
+                if (t.isObjectMethod(prop)) {
+                    const watchName = (prop.key as t.Identifier).name;
+                    const watchHandler = prop.body;
                     return `watch(() => ${watchName}, () => ${generate(watchHandler).code});`;
                 }
                 return '';
@@ -58,7 +57,7 @@ const componentOptions: ComponentOption[] = [
 ];
 
 // Function to transform a component from Options API to Composition API
-export async function transformComponent(scriptContent: string): Promise<string> {
+export function transformComponent(scriptContent: string): string {
     // Parse the script content using Babel
     const ast = parse(scriptContent, { sourceType: 'module', plugins: ['jsx'] });
 
@@ -66,33 +65,40 @@ export async function transformComponent(scriptContent: string): Promise<string>
 
     traverse(ast, {
         ExportDefaultDeclaration(path) {
-            const declaration = path.node.declaration as t.CallExpression;
-            const objectArg = declaration.arguments[0] as t.ObjectExpression;
+            const declaration = path.node.declaration;
 
-            objectArg.properties.forEach((property) => {
-                if (t.isObjectProperty(property)) {
-                    const key = property.key as t.Identifier;
-                    const name = key.name;
-                    const value = property.value;
+            // Check if declaration is a call expression to defineComponent
+            if (t.isCallExpression(declaration) && t.isIdentifier(declaration.callee) && declaration.callee.name === 'defineComponent') {
+                const objectArg = declaration.arguments[0];
 
-                    const option = componentOptions.find(opt => opt.name === name);
-                    if (option && t.isObjectExpression(value)) {
-                        scriptSetupLines.push(option.transform(value));
-                    } else {
-                        scriptSetupLines.push(`// Unhandled property: ${name}`);
-                    }
+                if (t.isObjectExpression(objectArg)) {
+                    objectArg.properties.forEach((property) => {
+                        if (t.isObjectProperty(property)) {
+                            const key = property.key as t.Identifier;
+                            const name = key.name;
+                            const value = property.value;
+
+                            const option = componentOptions.find(opt => opt.name === name);
+                            if (option && t.isObjectExpression(value)) {
+                                scriptSetupLines.push(option.transform(value));
+                            } else {
+                                scriptSetupLines.push(`// Unhandled property: ${name}`);
+                            }
+                        } else {
+                            scriptSetupLines.push('// Unhandled property type');
+                        }
+                    });
                 } else {
-                    scriptSetupLines.push('// Unhandled property type');
+                    throw new Error('Argument to defineComponent is not an object');
                 }
-            });
+            } else {
+                throw new Error('Export default is not a defineComponent call');
+            }
         }
     });
 
     // Generate the script setup block
     const scriptSetup = `<script setup>\n${scriptSetupLines.join('\n')}\n</script>`;
 
-    // Format the generated code using Prettier
-    const formattedCode = prettier.format(scriptSetup, { parser: 'vue' });
-
-    return formattedCode;
+    return scriptSetup;
 }
