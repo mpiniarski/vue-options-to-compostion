@@ -3,6 +3,8 @@ import traverse, {NodePath} from '@babel/traverse';
 import * as t from '@babel/types';
 import generate from '@babel/generator';
 import {removeThisReferences} from './removeThisReferences';
+import { readdirSync } from 'fs';
+import { join } from 'path';
 
 // Define the ComponentOption type
 type ComponentOption = {
@@ -10,62 +12,19 @@ type ComponentOption = {
     transform: (path: NodePath<t.ObjectProperty>) => string;
 };
 
-// Implement specific transformations
-const componentOptions: ComponentOption[] = [
-    {
-        name: 'props',
-        transform: (path: NodePath<t.ObjectProperty>) => {
-            const value = path.get('value') as NodePath<t.ObjectExpression>;
-            return `const props = defineProps(${generate(value.node).code});`;
-        }
-    },
-    {
-        name: 'computed',
-        transform: (path: NodePath<t.ObjectProperty>) => {
-            const properties = (path.get('value') as NodePath<t.ObjectExpression>).get('properties');
-            return properties.map(prop => {
-                if (prop.isObjectMethod()) {
-                    const computedName = (prop.node.key as t.Identifier).name;
-                    removeThisReferences(prop.get('body') as NodePath<t.BlockStatement>);
-                    const computedBody = prop.node.body;
-                    return `const ${computedName} = computed(() => ${generate(computedBody).code});`;
-                }
-                return '';
-            }).join('\n');
-        }
-    },
-    {
-        name: 'methods',
-        transform: (path: NodePath<t.ObjectProperty>) => {
-            const properties = (path.get('value') as NodePath<t.ObjectExpression>).get('properties');
-            return properties.map(prop => {
-                if (prop.isObjectMethod()) {
-                    const methodName = (prop.node.key as t.Identifier).name;
-                    removeThisReferences(prop.get('body') as NodePath<t.BlockStatement>);
-                    const methodBody = prop.node.body;
-                    const params = prop.node.params.map(param => generate(param).code).join(', ');
-                    return `function ${methodName}(${params}) ${generate(methodBody).code}`;
-                }
-                return '';
-            }).join('\n');
-        }
-    },
-    {
-        name: 'watch',
-        transform: (path: NodePath<t.ObjectProperty>) => {
-            const properties = (path.get('value') as NodePath<t.ObjectExpression>).get('properties');
-            return properties.map(prop => {
-                if (prop.isObjectMethod()) {
-                    const watchName = (prop.node.key as t.Identifier).name;
-                    removeThisReferences(prop.get('body') as NodePath<t.BlockStatement>);
-                    const watchHandler = prop.node.body;
-                    return `watch(() => ${watchName}, (newValue, oldValue) => ${generate(watchHandler).code});`;
-                }
-                return '';
-            }).join('\n');
-        }
-    }
-];
+/// Function to dynamically load transformation functions
+function loadTransformations(): ComponentOption[] {
+    const transformationsDir = join(__dirname, 'transformations');
+    const files = readdirSync(transformationsDir);
+    return files.map(file => {
+        const name = file.replace('.ts', '');
+        const { default: transform } = require(join(transformationsDir, file));
+        return { name, transform };
+    });
+}
+
+// Load the transformation functions
+const componentOptions = loadTransformations();
 
 // Function to transform a component from Options API to Composition API
 export function transformComponent(scriptContent: string): string {
