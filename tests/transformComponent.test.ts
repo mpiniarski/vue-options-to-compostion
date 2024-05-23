@@ -123,8 +123,9 @@ const testCases: TestCase[] = [
             </script>
         `
     },
+// Watch test cases
     {
-        name: 'transforms watch correctly',
+        name: 'transforms multiple watch properties correctly',
         optionsAPIScript: `
             import { defineComponent } from 'vue';
 
@@ -132,6 +133,9 @@ const testCases: TestCase[] = [
                 watch: {
                     message(newValue, oldValue) {
                         console.log('Message changed from', oldValue, 'to', newValue);
+                    },
+                    count(newValue, oldValue) {
+                        console.log('Count changed from', oldValue, 'to', newValue);
                     }
                 }
             });
@@ -141,9 +145,60 @@ const testCases: TestCase[] = [
             watch(() => message, (newValue, oldValue) => {
                 console.log('Message changed from', oldValue, 'to', newValue);
             });
+            watch(() => count, (newValue, oldValue) => {
+                console.log('Count changed from', oldValue, 'to', newValue);
+            });
             </script>
         `
-    }
+    },
+    {
+        name: 'transforms watch properties with handler and immediate correctly',
+        optionsAPIScript: `
+            import { defineComponent } from 'vue';
+
+            export default defineComponent({
+                watch: {
+                    message: {
+                        handler(newValue, oldValue) {
+                            console.log('Message changed from', oldValue, 'to', newValue);
+                        },
+                        immediate: true
+                    }
+                }
+            });
+        `,
+        expectedCompositionAPIScript: `
+            <script setup>
+            watch(() => message, (newValue, oldValue) => {
+                console.log('Message changed from', oldValue, 'to', newValue);
+            }, { immediate: true });
+            </script>
+        `
+    },
+    {
+        name: 'transforms watch properties with arrow function handler correctly',
+        optionsAPIScript: `
+            import { defineComponent } from 'vue';
+
+            export default defineComponent({
+                watch: {
+                    message: {
+                        handler: (newValue, oldValue) => {
+                            console.log('Message changed from', oldValue, 'to', newValue);
+                        },
+                        immediate: true
+                    }
+                }
+            });
+        `,
+        expectedCompositionAPIScript: `
+            <script setup>
+            watch(() => message, (newValue, oldValue) => {
+                console.log('Message changed from', oldValue, 'to', newValue);
+            }, { immediate: true });
+            </script>
+        `
+    },
 ];
 
 describe('transformComponent', () => {
