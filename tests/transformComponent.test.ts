@@ -67,8 +67,9 @@ const testCases: TestCase[] = [
             </script>
         `
     },
+    // Computed test cases
     {
-        name: 'transforms computed properties correctly',
+        name: 'transforms multiple computed properties correctly',
         optionsAPIScript: `
             import { defineComponent } from 'vue';
 
@@ -76,6 +77,9 @@ const testCases: TestCase[] = [
                 computed: {
                     reversedMessage() {
                         return this.message.split('').reverse().join('');
+                    },
+                    upperMessage() {
+                        return this.message.toUpperCase();
                     }
                 }
             });
@@ -85,10 +89,12 @@ const testCases: TestCase[] = [
             const reversedMessage = computed(() => {
                 return message.split('').reverse().join('');
             });
+            const upperMessage = computed(() => {
+                return message.toUpperCase();
+            });
             </script>
         `
-    },
-    {
+    },{
         name: 'transforms methods correctly',
         optionsAPIScript: `
             import { defineComponent } from 'vue';
