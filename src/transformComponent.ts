@@ -1,8 +1,8 @@
-import { parse } from '@babel/parser';
-import traverse, { NodePath } from '@babel/traverse';
+import {parse} from '@babel/parser';
+import traverse, {NodePath} from '@babel/traverse';
 import * as t from '@babel/types';
 import generate from '@babel/generator';
-import { removeThisReferences } from './removeThisReferences';
+import {removeThisReferences} from './removeThisReferences';
 
 // Define the ComponentOption type
 type ComponentOption = {
@@ -43,7 +43,8 @@ const componentOptions: ComponentOption[] = [
                     const methodName = (prop.node.key as t.Identifier).name;
                     removeThisReferences(prop.get('body') as NodePath<t.BlockStatement>);
                     const methodBody = prop.node.body;
-                    return `function ${methodName}() ${generate(methodBody).code}`;
+                    const params = prop.node.params.map(param => generate(param).code).join(', ');
+                    return `function ${methodName}(${params}) ${generate(methodBody).code}`;
                 }
                 return '';
             }).join('\n');
@@ -69,7 +70,7 @@ const componentOptions: ComponentOption[] = [
 // Function to transform a component from Options API to Composition API
 export function transformComponent(scriptContent: string): string {
     // Parse the script content using Babel
-    const ast = parse(scriptContent, { sourceType: 'module', plugins: ['jsx'] });
+    const ast = parse(scriptContent, {sourceType: 'module', plugins: ['jsx']});
 
     const scriptSetupLines: string[] = [];
 

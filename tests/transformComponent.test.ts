@@ -1,4 +1,4 @@
-import { transformComponent } from '../src/transformComponent';
+import {transformComponent} from '../src/transformComponent';
 import cleanUpScript from "./utils/cleanUpScript";
 
 type TestCase = {
@@ -8,7 +8,7 @@ type TestCase = {
 };
 
 const testCases: TestCase[] = [
-     // Props test cases
+    // Props test cases
     {
         name: 'transforms props correctly with various types and defaults',
         optionsAPIScript: `
@@ -94,23 +94,31 @@ const testCases: TestCase[] = [
             });
             </script>
         `
-    },{
-        name: 'transforms methods correctly',
+    },
+    // Methods test cases
+    {
+        name: 'transforms methods correctly with parameters',
         optionsAPIScript: `
             import { defineComponent } from 'vue';
 
             export default defineComponent({
                 methods: {
-                    greet() {
-                        console.log('Hello');
+                    greet(name) {
+                        console.log(\`Hello \${name}\`);
+                    },
+                    farewell(name, timeOfDay) {
+                        console.log(\`Goodbye \${name}, have a nice \${timeOfDay}\`);
                     }
                 }
             });
         `,
         expectedCompositionAPIScript: `
             <script setup>
-            function greet() {
-                console.log('Hello');
+            function greet(name) {
+                console.log(\`Hello \${name}\`);
+            }
+            function farewell(name, timeOfDay) {
+                console.log(\`Goodbye \${name}, have a nice \${timeOfDay}\`);
             }
             </script>
         `
@@ -139,7 +147,7 @@ const testCases: TestCase[] = [
 ];
 
 describe('transformComponent', () => {
-    testCases.forEach(({ name, optionsAPIScript, expectedCompositionAPIScript }) => {
+    testCases.forEach(({name, optionsAPIScript, expectedCompositionAPIScript}) => {
         it(name, () => {
             const result = transformComponent(optionsAPIScript.trim());
             expect(cleanUpScript(result)).toBe(cleanUpScript(expectedCompositionAPIScript));
