@@ -1,27 +1,33 @@
 import { parse } from '@babel/parser';
-import traverse from '@babel/traverse';
+import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import generate from '@babel/generator';
+import { removeThisReferences } from './removeThisReferences';
 
 // Define the ComponentOption type
 type ComponentOption = {
     name: string;
-    transform: (value: t.ObjectExpression) => string;
+    transform: (path: NodePath<t.ObjectProperty>) => string;
 };
 
 // Implement specific transformations
 const componentOptions: ComponentOption[] = [
     {
         name: 'props',
-        transform: (value: t.ObjectExpression) => `const props = defineProps(${generate(value).code});`
+        transform: (path: NodePath<t.ObjectProperty>) => {
+            const value = path.get('value') as NodePath<t.ObjectExpression>;
+            return `const props = defineProps(${generate(value.node).code});`;
+        }
     },
     {
         name: 'computed',
-        transform: (value: t.ObjectExpression) => {
-            return value.properties.map(prop => {
-                if (t.isObjectMethod(prop)) {
-                    const computedName = (prop.key as t.Identifier).name;
-                    const computedBody = prop.body;
+        transform: (path: NodePath<t.ObjectProperty>) => {
+            const properties = (path.get('value') as NodePath<t.ObjectExpression>).get('properties');
+            return properties.map(prop => {
+                if (prop.isObjectMethod()) {
+                    const computedName = (prop.node.key as t.Identifier).name;
+                    removeThisReferences(prop.get('body') as NodePath<t.BlockStatement>);
+                    const computedBody = prop.node.body;
                     return `const ${computedName} = computed(() => ${generate(computedBody).code});`;
                 }
                 return '';
@@ -30,11 +36,13 @@ const componentOptions: ComponentOption[] = [
     },
     {
         name: 'methods',
-        transform: (value: t.ObjectExpression) => {
-            return value.properties.map(prop => {
-                if (t.isObjectMethod(prop)) {
-                    const methodName = (prop.key as t.Identifier).name;
-                    const methodBody = prop.body;
+        transform: (path: NodePath<t.ObjectProperty>) => {
+            const properties = (path.get('value') as NodePath<t.ObjectExpression>).get('properties');
+            return properties.map(prop => {
+                if (prop.isObjectMethod()) {
+                    const methodName = (prop.node.key as t.Identifier).name;
+                    removeThisReferences(prop.get('body') as NodePath<t.BlockStatement>);
+                    const methodBody = prop.node.body;
                     return `function ${methodName}() ${generate(methodBody).code}`;
                 }
                 return '';
@@ -43,12 +51,14 @@ const componentOptions: ComponentOption[] = [
     },
     {
         name: 'watch',
-        transform: (value: t.ObjectExpression) => {
-            return value.properties.map(prop => {
-                if (t.isObjectMethod(prop)) {
-                    const watchName = (prop.key as t.Identifier).name;
-                    const watchHandler = prop.body;
-                    return `watch(() => ${watchName}, () => ${generate(watchHandler).code});`;
+        transform: (path: NodePath<t.ObjectProperty>) => {
+            const properties = (path.get('value') as NodePath<t.ObjectExpression>).get('properties');
+            return properties.map(prop => {
+                if (prop.isObjectMethod()) {
+                    const watchName = (prop.node.key as t.Identifier).name;
+                    removeThisReferences(prop.get('body') as NodePath<t.BlockStatement>);
+                    const watchHandler = prop.node.body;
+                    return `watch(() => ${watchName}, (newValue, oldValue) => ${generate(watchHandler).code});`;
                 }
                 return '';
             }).join('\n');
@@ -72,15 +82,15 @@ export function transformComponent(scriptContent: string): string {
                 const objectArg = declaration.arguments[0];
 
                 if (t.isObjectExpression(objectArg)) {
-                    objectArg.properties.forEach((property) => {
+                    (objectArg.properties as t.ObjectProperty[]).forEach((property, index) => {
                         if (t.isObjectProperty(property)) {
                             const key = property.key as t.Identifier;
                             const name = key.name;
-                            const value = property.value;
 
                             const option = componentOptions.find(opt => opt.name === name);
-                            if (option && t.isObjectExpression(value)) {
-                                scriptSetupLines.push(option.transform(value));
+                            if (option) {
+                                const propertyPath = path.get(`declaration.arguments.0.properties.${index}`) as NodePath<t.ObjectProperty>;
+                                scriptSetupLines.push(option.transform(propertyPath));
                             } else {
                                 scriptSetupLines.push(`// Unhandled property: ${name}`);
                             }

@@ -1,4 +1,5 @@
 import { transformComponent } from '../src/transformComponent';
+import cleanUpScript from "./utils/cleanUpScript";
 
 type TestCase = {
     name: string;
@@ -42,7 +43,7 @@ const testCases: TestCase[] = [
         expectedCompositionAPIScript: `
             <script setup>
             const reversedMessage = computed(() => {
-                return this.message.split('').reverse().join('');
+                return message.split('').reverse().join('');
             });
             </script>
         `
@@ -83,22 +84,13 @@ const testCases: TestCase[] = [
         `,
         expectedCompositionAPIScript: `
             <script setup>
-            watch(() => message, () => {
+            watch(() => message, (newValue, oldValue) => {
                 console.log('Message changed from', oldValue, 'to', newValue);
             });
             </script>
         `
     }
 ];
-
-function cleanUpScript(script: string): string {
-    return script
-    .trim()
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line !== '')
-    .join('\n');
-}
 
 describe('transformComponent', () => {
     testCases.forEach(({ name, optionsAPIScript, expectedCompositionAPIScript }) => {
