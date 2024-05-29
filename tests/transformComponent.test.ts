@@ -5,6 +5,8 @@ type TestCase = {
     name: string;
     optionsAPIScript: string;
     expectedCompositionAPIScript: string;
+    only?: boolean;
+    ignore?: boolean;
 };
 
 const testCases: TestCase[] = [
@@ -199,13 +201,82 @@ const testCases: TestCase[] = [
             </script>
         `
     },
+    // Data test cases
+    {
+        name: 'transforms data property when it is an object',
+        optionsAPIScript: `
+            import { defineComponent } from 'vue';
+
+            export default defineComponent({
+                data: {
+                    message: 'Hello',
+                    count: 0
+                }
+            });
+        `,
+        expectedCompositionAPIScript: `
+            <script setup>
+            const message = ref('Hello');
+            const count = ref(0);
+            </script>
+        `
+    },
+    {
+        ignore: true,
+        name: 'transforms data property when it is a function returning object',
+        optionsAPIScript: `
+            import { defineComponent } from 'vue';
+
+            export default defineComponent({
+                data() {
+                    return {
+                        message: 'Hello',
+                        count: 0
+                    };
+                }
+            });
+        `,
+        expectedCompositionAPIScript: `
+            <script setup>
+            const message = ref('Hello');
+            const count = ref(0);
+            </script>
+        `
+    },
+    {
+        name: 'transforms data property when it is an arrow function accepting vm and returning object',
+        optionsAPIScript: `
+            import { defineComponent } from 'vue';
+
+            export default defineComponent({
+                data: (vm) => ({
+                    message: 'Hello',
+                    count: 0
+                })
+            });
+        `,
+        expectedCompositionAPIScript: `
+            <script setup>
+            const message = ref('Hello');
+            const count = ref(0);
+            </script>
+        `
+    },
 ];
 
 describe('transformComponent', () => {
-    testCases.forEach(({name, optionsAPIScript, expectedCompositionAPIScript}) => {
-        it(name, () => {
+    testCases.forEach(({name, optionsAPIScript, expectedCompositionAPIScript, only, ignore }) => {
+        if (ignore) {
+          return  ;
+        }
+        const testFunction = () => {
             const result = transformComponent(optionsAPIScript.trim());
             expect(cleanUpScript(result)).toBe(cleanUpScript(expectedCompositionAPIScript));
-        });
+        };
+        if(only) {
+            it.only(name, testFunction);
+        } else {
+            it(name, testFunction);
+        }
     });
 });

@@ -3,7 +3,7 @@ import * as t from '@babel/types';
 import generate from '@babel/generator';
 import { removeThisReferences } from '../removeThisReferences';
 
-export default (path: NodePath<t.ObjectProperty>): string => {
+export default (path: NodePath<t.ObjectProperty | t.ObjectMethod>): string => {
     const properties = (path.get('value') as NodePath<t.ObjectExpression>).get('properties');
     return properties.map(prop => {
         if (prop.isObjectMethod()) {

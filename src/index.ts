@@ -1,5 +1,6 @@
 import path from 'path';
-import { readScriptTag } from './readScriptTag';
+import fs from 'fs/promises';
+import {readScriptTag, replaceScriptTag} from './vueFileManipulation';
 import { transformComponent } from './transformComponent';
 
 // Main function to handle CLI input
@@ -11,10 +12,13 @@ import { transformComponent } from './transformComponent';
     }
 
     const filePath = path.resolve(args[0]);
+    const fileContent = await fs.readFile(filePath, 'utf-8');
     try {
-        const scriptContent = await readScriptTag(filePath);
-        const result = await transformComponent(scriptContent);
-        console.log(result);
+        const scriptContent = await readScriptTag(fileContent);
+        const newScriptContent = transformComponent(scriptContent);
+        const newFileContent = replaceScriptTag(fileContent, newScriptContent);
+
+        console.log(newFileContent);
     } catch (error) {
         console.error('Error transforming component:', error);
     }

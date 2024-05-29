@@ -3,16 +3,16 @@ import * as t from '@babel/types';
 import generate from '@babel/generator';
 import { removeThisReferences } from '../removeThisReferences';
 
-export default (path: NodePath<t.ObjectProperty>): string => {
+export default (path: NodePath<t.ObjectProperty | t.ObjectMethod>): string => {
     const properties = (path.get('value') as NodePath<t.ObjectExpression>).get('properties');
 
-    return properties.map(prop => {
-        if (prop.isObjectMethod()) {
+    const results = properties.map(prop => {
+        if (t.isObjectMethod(prop.node)) {
             const watchName = (prop.node.key as t.Identifier).name;
             removeThisReferences(prop.get('body') as NodePath<t.BlockStatement>);
             const watchHandler = prop.node.body;
             return `watch(() => ${watchName}, (newValue, oldValue) => ${generate(watchHandler).code});`;
-        } else if (prop.isObjectProperty() && t.isObjectExpression(prop.node.value)) {
+        } else if (t.isObjectProperty(prop.node) && t.isObjectExpression(prop.node.value)) {
             const objectProperties = (prop.get('value') as NodePath<t.ObjectExpression>).get('properties') as NodePath<t.ObjectProperty>[];
 
             const handlerProp = objectProperties.find(p => t.isIdentifier(p.node.key) && p.node.key.name === 'handler');
@@ -24,21 +24,20 @@ export default (path: NodePath<t.ObjectProperty>): string => {
                 removeThisReferences(handlerBody);
                 const immediate = immediateProp ? `{ immediate: true }` : '';
                 return `watch(() => ${watchName}, (newValue, oldValue) => ${generate(handlerBody.node).code}${immediate ? `, ${immediate}` : ''});`;
-            } else if (handlerProp && t.isObjectProperty(handlerProp.node)) {
+            } else if (handlerProp && (t.isFunctionExpression(handlerProp.node.value) || t.isArrowFunctionExpression(handlerProp.node.value))) {
                 const watchName = (prop.node.key as t.Identifier).name;
-                const handlerValue = handlerProp.get('value');
-                if (t.isFunctionExpression(handlerValue.node) || t.isArrowFunctionExpression(handlerValue.node)) {
-                    const handlerBody = handlerValue.get('body') as NodePath<t.BlockStatement>;
-                    removeThisReferences(handlerBody);
-                    const immediate = immediateProp ? `{ immediate: true }` : '';
-                    return `watch(() => ${watchName}, (newValue, oldValue) => ${generate(handlerBody.node).code}${immediate ? `, ${immediate}` : ''});`;
-                } else {
-                    console.error(`Handler property is not a function: ${generate(handlerProp.node)}`);
-                }
+                const handlerBody = handlerProp.get('value.body') as NodePath<t.BlockStatement>;
+                removeThisReferences(handlerBody);
+                const immediate = immediateProp ? `{ immediate: true }` : '';
+                return `watch(() => ${watchName}, (newValue, oldValue) => ${generate(handlerBody.node).code}${immediate ? `, ${immediate}` : ''});`;
+            } else if (handlerProp) {
+                console.error(`Handler property found but its value is not a function: ${generate(handlerProp.node)}`);
             } else {
-                console.error(`Handler property not found or is not a valid function: ${generate(prop.node)}`);
+                console.error(`Handler property not found in object properties: ${generate(prop.node)}`);
             }
         }
-        return '';
-    }).join('\n');
+        return `// Unhandled property type: ${generate(prop.node)}`;
+    });
+
+    return results.join('\n');
 };
