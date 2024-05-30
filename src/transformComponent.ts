@@ -1,34 +1,21 @@
 import { parse } from '@babel/parser';
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import { readdirSync } from 'fs';
-import { join } from 'path';
-
-// Define the ComponentOption type
-type ComponentOption = {
-    name: string;
-    transform: (path: NodePath<t.ObjectProperty | t.ObjectMethod>) => string;
-};
+import computed from './transformations/computed'
+import data from './transformations/data'
+import methods from './transformations/methods'
+import props from './transformations/props'
+import watch from './transformations/watch'
 
 // Cache for transformation functions
-const transformationCache: Record<string, ComponentOption> = {};
-
-// Function to dynamically load transformation functions
-function loadTransformations(): ComponentOption[] {
-    const transformationsDir = join(__dirname, 'transformations');
-    const files = readdirSync(transformationsDir);
-    return files.map(file => {
-        const name = file.replace('.ts', '');
-        if (!transformationCache[name]) {
-            const { default: transform } = require(join(transformationsDir, file));
-            transformationCache[name] = { name, transform };
-        }
-        return transformationCache[name];
-    });
-}
-
 // Load the transformation functions
-const componentOptions = loadTransformations();
+const componentOptions = {
+    computed,
+    data,
+    methods,
+    props,
+    watch,
+} as const;
 
 // Function to transform a component from Options API to Composition API
 export function transformComponent(scriptContent: string): string {
@@ -49,13 +36,13 @@ export function transformComponent(scriptContent: string): string {
                     (objectArg.properties as (t.ObjectProperty | t.ObjectMethod)[]).forEach((property, index) => {
                         if (t.isObjectProperty(property) || t.isObjectMethod(property)) {
                             const key = property.key as t.Identifier;
-                            const name = key.name;
+                            const name = key.name as keyof typeof componentOptions;
 
-                            const option = componentOptions.find(opt => opt.name === name);
+                            const option = componentOptions[name];
                             if (option) {
                                 const propertyPath = path.get(`declaration.arguments.0.properties.${index}`) as NodePath<t.ObjectProperty | t.ObjectMethod>;
                                 try {
-                                    scriptSetupLines.push(option.transform(propertyPath));
+                                    scriptSetupLines.push(option(propertyPath));
                                 } catch (error) {
                                     if (error instanceof Error) {
                                         console.error(`Error transforming property ${name}:`, error.message);

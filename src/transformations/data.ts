@@ -6,7 +6,6 @@ export default (path: NodePath<t.ObjectProperty | t.ObjectMethod>): string => {
     const dataFunction = path.get('value') as NodePath<t.ObjectExpression> | NodePath<t.FunctionExpression> | NodePath<t.ArrowFunctionExpression> | NodePath<t.ObjectMethod>;
     let properties: NodePath<t.ObjectProperty | t.ObjectMethod>[] = [];
 
-    debugger
     if (dataFunction.isObjectExpression()) {
         properties = dataFunction.get('properties') as NodePath<t.ObjectProperty | t.ObjectMethod>[];
     } else if (dataFunction.isFunctionExpression() || dataFunction.isArrowFunctionExpression() || dataFunction.isObjectMethod()) {
