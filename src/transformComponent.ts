@@ -2,6 +2,7 @@ import { parse } from '@babel/parser';
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import computed from './transformations/computed'
+import components from './transformations/components'
 import data from './transformations/data'
 import methods from './transformations/methods'
 import props from './transformations/props'
@@ -11,6 +12,7 @@ import watch from './transformations/watch'
 // Load the transformation functions
 const componentOptions = {
     computed,
+    components,
     data,
     methods,
     props,
