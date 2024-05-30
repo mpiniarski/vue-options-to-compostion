@@ -5,7 +5,7 @@ export function given(script: string) {
 }
 
 export function whenScriptIsTransformed(script: string) {
-    return normalizeScript(transformComponent(script));
+    return transformComponent(script);
 }
 
 
@@ -25,7 +25,12 @@ expect.extend({
     toEqualScript(received: string, expected: string) {
         const message = `Expected: ${this.utils.printExpected(expected)}\nReceived: ${this.utils.printReceived(received,)}`;
 
-        if (normalizeScript(received) === normalizeScript(expected)) {
+        const normalisedReceived = normalizeScript(received);
+        const normalisedExpected = normalizeScript(expected);
+
+        const pass = normalisedReceived === normalisedExpected;
+
+        if (pass) {
             return {
                 message: () => message,
                 pass: true,
@@ -33,7 +38,7 @@ expect.extend({
         }
         return {
             message: () =>
-                    `${message}\n\n${this.utils.diff(expected, received)}`,
+                    `${message}\n\n${this.utils.diff(normalisedExpected, normalisedReceived)}`,
             pass: false,
         };
     },

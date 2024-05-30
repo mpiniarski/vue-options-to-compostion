@@ -7,6 +7,7 @@ import data from './transformations/data'
 import methods from './transformations/methods'
 import props from './transformations/props'
 import watch from './transformations/watch'
+import emits from "./transformations/emits";
 
 // Cache for transformation functions
 // Load the transformation functions
@@ -17,6 +18,7 @@ const componentOptions = {
     methods,
     props,
     watch,
+    emits
 } as const;
 
 // Function to transform a component from Options API to Composition API
