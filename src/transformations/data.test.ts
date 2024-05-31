@@ -68,4 +68,34 @@ describe('transformComponent - Data Transformations', () => {
             </script>
         `);
     });
+
+    it('transforms data property and adds .value to usages', () => {
+        const optionsAPIScript = given(`
+            import { defineComponent } from 'vue';
+
+            export default defineComponent({
+                data: {
+                    message: 'Hello',
+                    count: 0
+                },
+                methods: {
+                    greet() {
+                        console.log(this.message, this.count);
+                    }
+                }
+            });
+        `);
+
+        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+
+        thenExpect(compositionAPIScript).toEqualScript(`
+            <script setup>
+            const message = ref('Hello');
+            const count = ref(0);
+            function greet() {
+                console.log(message.value, count.value);
+            }
+            </script>
+        `);
+    });
 });

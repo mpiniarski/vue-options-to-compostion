@@ -23,8 +23,6 @@ export const thenExpect = expect;
 
 expect.extend({
     toEqualScript(received: string, expected: string) {
-        const message = `Expected: ${this.utils.printExpected(expected)}\nReceived: ${this.utils.printReceived(received,)}`;
-
         const normalisedReceived = normalizeScript(received);
         const normalisedExpected = normalizeScript(expected);
 
@@ -32,13 +30,12 @@ expect.extend({
 
         if (pass) {
             return {
-                message: () => message,
+                message: () => '',
                 pass: true,
             };
         }
         return {
-            message: () =>
-                    `${message}\n\n${this.utils.diff(normalisedExpected, normalisedReceived)}`,
+            message: () => this.utils.diff(normalisedExpected, normalisedReceived) ?? '',
             pass: false,
         };
     },

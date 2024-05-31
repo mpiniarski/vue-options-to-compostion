@@ -14,7 +14,9 @@ describe('transformComponent - Name Transformation', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
-            defineComponent({ name: 'MyComponent' });
+            defineComponent({ 
+              name: 'MyComponent' 
+            });
             </script>
         `);
     });

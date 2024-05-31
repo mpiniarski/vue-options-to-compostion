@@ -29,4 +29,40 @@ describe('transformComponent - Computed Transformations', () => {
             </script>
         `);
     });
-});
+    it('transforms computed property and adds .value to usages', () => {
+        const optionsAPIScript = given(`
+            import { defineComponent } from 'vue';
+
+            export default defineComponent({
+                computed: {
+                    message() {
+                        return 'Hello';
+                    },
+                    count() {
+                        return 0;
+                    },
+                },
+                methods: {
+                    greet() {
+                        console.log(this.message, this.count);
+                    },
+                },
+            });
+        `);
+
+        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+
+        thenExpect(compositionAPIScript).toEqualScript(`
+            <script setup>
+            const message = computed(() => {
+              return 'Hello';
+            });
+            const count = computed(() => {
+              return 0;
+            });
+            function greet() {
+                console.log(message.value, count.value);
+            }
+            </script>
+        `);
+    });});

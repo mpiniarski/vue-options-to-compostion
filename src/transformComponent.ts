@@ -1,11 +1,16 @@
 import { parse } from '@babel/parser';
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
+import generate from '@babel/generator';
 import { readdirSync } from 'fs';
 import { join, extname, basename } from 'path';
 
 // Define the Transformation type
-type Transformation = (path: NodePath<t.ObjectProperty | t.ObjectMethod>) => string;
+type Transformation = (path: NodePath<t.ObjectProperty | t.ObjectMethod>, context: TransformationContext) => string;
+
+export interface TransformationContext {
+    refIdentifiers: Set<string>;
+}
 
 // Initialize componentOptions with transformations loaded from files
 const componentOptions: Record<string, Transformation> = (() => {
@@ -33,6 +38,9 @@ export function transformComponent(scriptContent: string): string {
     const ast = parse(scriptContent, { sourceType: 'module', plugins: ['jsx'] });
 
     const scriptSetupLines: string[] = [];
+    const refIdentifiers = new Set<string>();
+
+    const context: TransformationContext = { refIdentifiers };
 
     traverse(ast, {
         ExportDefaultDeclaration(path) {
@@ -52,7 +60,7 @@ export function transformComponent(scriptContent: string): string {
                             if (option) {
                                 const propertyPath = path.get(`declaration.arguments.0.properties.${index}`) as NodePath<t.ObjectProperty | t.ObjectMethod>;
                                 try {
-                                    scriptSetupLines.push(option(propertyPath));
+                                    scriptSetupLines.push(option(propertyPath, context));
                                 } catch (error) {
                                     if (error instanceof Error) {
                                         console.error(`Error transforming property ${name}:`, error.message);
@@ -77,9 +85,28 @@ export function transformComponent(scriptContent: string): string {
         }
     });
 
-    // Generate the script setup block
+    // Combine the generated script setup lines into one string
+    const scriptSetupCode = scriptSetupLines.join('\n');
+
+    // Parse the generated script setup code
+    const setupAst = parse(scriptSetupCode, { sourceType: 'module', plugins: ['jsx'] });
+
+    // Traverse the AST to append `.value` to `ref` and `computed` properties
+    traverse(setupAst, {
+        Identifier(path) {
+            if (
+                context.refIdentifiers.has(path.node.name) &&
+                !t.isMemberExpression(path.parent) &&
+                !(path.parentPath.isVariableDeclarator() && path.parentPath.get('id') === path) &&
+                !(path.parentPath.isAssignmentExpression() && path.parentPath.get('left') === path)
+            ) {
+                path.replaceWith(t.memberExpression(t.identifier(path.node.name), t.identifier('value')));
+            }
+        }
+    });
+    // Generate the final script setup block
     const scriptSetup = `<script setup>
-${scriptSetupLines.join('\n')}
+${generate(setupAst).code}
 </script>`;
 
     return scriptSetup;

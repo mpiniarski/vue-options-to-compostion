@@ -53,7 +53,9 @@ describe('transformComponent - Watch Transformations', () => {
             <script setup>
             watch(() => message, (newValue, oldValue) => {
                 console.log('Message changed from', oldValue, 'to', newValue);
-            }, { immediate: true });
+            }, { 
+              immediate: true 
+            });
             </script>
         `);
     });
@@ -80,7 +82,9 @@ describe('transformComponent - Watch Transformations', () => {
             <script setup>
             watch(() => message, (newValue, oldValue) => {
                 console.log('Message changed from', oldValue, 'to', newValue);
-            }, { immediate: true });
+            }, { 
+              immediate: true 
+            });
             </script>
         `);
     });
