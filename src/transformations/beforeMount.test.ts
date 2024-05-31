@@ -1,13 +1,13 @@
 import { given, thenExpect, whenScriptIsTransformed } from './_testUtils';
 
-describe('transformComponent - Created Transformations', () => {
-    it('transforms created lifecycle hook', () => {
+describe('transformComponent - BeforeMount Transformations', () => {
+    it('transforms beforeMount lifecycle hook', () => {
         const optionsAPIScript = given(`
             import { defineComponent } from 'vue';
 
             export default defineComponent({
-                created() {
-                    console.log('Component created');
+                beforeMount() {
+                    console.log('Component before mount');
                 }
             });
         `);
@@ -16,7 +16,9 @@ describe('transformComponent - Created Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
-            console.log('Component created');
+            onBeforeMount(() => {
+                console.log('Component before mount');
+            });
             </script>
         `);
     });
