@@ -3,7 +3,7 @@ import * as t from '@babel/types';
 import generate from '@babel/generator';
 import { removeThisReferences } from '../../removeThisReferences';
 
-export function transformFunctionBody(path: NodePath<t.ObjectProperty | t.ObjectMethod>): string {
+export function transformFunctionBody(path: NodePath<t.ObjectProperty | t.ObjectMethod>): t.BlockStatement {
     let functionBody: NodePath<t.BlockStatement>;
 
     if (path.isObjectMethod()) {
@@ -11,7 +11,7 @@ export function transformFunctionBody(path: NodePath<t.ObjectProperty | t.Object
     } else if (path.isObjectProperty()) {
         const valuePath = path.get('value');
         if (valuePath.isFunctionExpression() || valuePath.isArrowFunctionExpression()) {
-            functionBody = (valuePath.get('body') as NodePath<t.BlockStatement>);
+            functionBody = valuePath.get('body') as NodePath<t.BlockStatement>;
         } else {
             throw new Error('Unsupported function type');
         }
@@ -20,5 +20,13 @@ export function transformFunctionBody(path: NodePath<t.ObjectProperty | t.Object
     }
 
     removeThisReferences(functionBody);
-    return generate(functionBody.node).code;
+    return functionBody.node;
+}
+
+export function generateFunctionCall(hook: string, functionBody: t.BlockStatement): string {
+    const generatedCode = generate(functionBody).code;
+    if (!generatedCode.startsWith('{')) {
+        return `${hook}(() => { ${generatedCode} });`;
+    }
+    return `${hook}(() => ${generatedCode});`;
 }
