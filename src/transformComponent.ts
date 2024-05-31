@@ -1,25 +1,31 @@
 import { parse } from '@babel/parser';
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import computed from './transformations/computed'
-import components from './transformations/components'
-import data from './transformations/data'
-import methods from './transformations/methods'
-import props from './transformations/props'
-import watch from './transformations/watch'
-import emits from "./transformations/emits";
+import { readdirSync } from 'fs';
+import { join, extname, basename } from 'path';
 
-// Cache for transformation functions
-// Load the transformation functions
-const componentOptions = {
-    computed,
-    components,
-    data,
-    methods,
-    props,
-    watch,
-    emits
-} as const;
+// Define the Transformation type
+type Transformation = (path: NodePath<t.ObjectProperty | t.ObjectMethod>) => string;
+
+// Initialize componentOptions with transformations loaded from files
+const componentOptions: Record<string, Transformation> = (() => {
+    const options: Record<string, Transformation> = {};
+    const transformationsDir = join(__dirname, 'transformations');
+    const files = readdirSync(transformationsDir);
+
+    files.forEach(file => {
+        const fileExt = extname(file);
+        const fileName = basename(file, fileExt);
+
+        // Check for valid TypeScript files excluding test and helper files
+        if (fileExt === '.ts' && !file.endsWith('.test.ts') && !file.startsWith('_')) {
+            const { default: transform } = require(join(transformationsDir, file));
+            options[fileName] = transform;
+        }
+    });
+
+    return options;
+})();
 
 // Function to transform a component from Options API to Composition API
 export function transformComponent(scriptContent: string): string {
