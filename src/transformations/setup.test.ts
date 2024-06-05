@@ -3,8 +3,6 @@ import { given, thenExpect, whenScriptIsTransformed } from './_testUtils';
 describe('transformComponent - Setup Transformations', () => {
     it('transforms setup property', () => {
         const optionsAPIScript = given(`
-            import { defineComponent } from 'vue';
-
             export default defineComponent({
                 setup() {
                     const message = 'Hello';

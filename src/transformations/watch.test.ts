@@ -3,8 +3,6 @@ import {given, thenExpect, whenScriptIsTransformed} from "./_testUtils";
 describe('transformComponent - Watch Transformations', () => {
     it('transforms multiple watch properties correctly', () => {
         const optionsAPIScript = given(`
-            import { defineComponent } from 'vue';
-
             export default defineComponent({
                 watch: {
                     message(newValue, oldValue) {
@@ -33,8 +31,6 @@ describe('transformComponent - Watch Transformations', () => {
 
     it('transforms watch properties with handler and immediate correctly', () => {
         const optionsAPIScript = given(`
-            import { defineComponent } from 'vue';
-
             export default defineComponent({
                 watch: {
                     message: {
@@ -62,8 +58,6 @@ describe('transformComponent - Watch Transformations', () => {
 
     it('transforms watch properties with arrow function handler correctly', () => {
         const optionsAPIScript = given(`
-            import { defineComponent } from 'vue';
-
             export default defineComponent({
                 watch: {
                     message: {

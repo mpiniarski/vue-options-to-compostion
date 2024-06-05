@@ -32,21 +32,22 @@ const componentOptions: Record<string, Transformation> = (() => {
     return options;
 })();
 
-// Function to transform a component from Options API to Composition API
 export function transformComponent(scriptContent: string): string {
-    // Parse the script content using Babel
     const ast = parse(scriptContent, { sourceType: 'module', plugins: ['jsx'] });
 
     const scriptSetupLines: string[] = [];
     const refIdentifiers = new Set<string>();
+    const importStatements: string[] = [];
 
     const context: TransformationContext = { refIdentifiers };
 
     traverse(ast, {
+        ImportDeclaration(path) {
+            importStatements.push(generate(path.node).code);
+        },
         ExportDefaultDeclaration(path) {
             const declaration = path.node.declaration;
 
-            // Check if declaration is a call expression to defineComponent
             if (t.isCallExpression(declaration) && t.isIdentifier(declaration.callee) && declaration.callee.name === 'defineComponent') {
                 const objectArg = declaration.arguments[0];
 
@@ -85,13 +86,9 @@ export function transformComponent(scriptContent: string): string {
         }
     });
 
-    // Combine the generated script setup lines into one string
     const scriptSetupCode = scriptSetupLines.join('\n');
-
-    // Parse the generated script setup code
     const setupAst = parse(scriptSetupCode, { sourceType: 'module', plugins: ['jsx'] });
 
-    // Traverse the AST to append `.value` to `ref` and `computed` properties
     traverse(setupAst, {
         Identifier(path) {
             if (
@@ -103,10 +100,8 @@ export function transformComponent(scriptContent: string): string {
             }
         }
     });
-    // Generate the final script setup block
-    const scriptSetup = `<script setup>
-${generate(setupAst).code}
-</script>`;
+
+    const scriptSetup = `<script setup>\n${importStatements.join('\n')}\n${generate(setupAst).code}\n</script>`;
 
     return scriptSetup;
 }

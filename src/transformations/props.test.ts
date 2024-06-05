@@ -3,8 +3,6 @@ import {given, thenExpect, whenScriptIsTransformed} from "./_testUtils";
 describe('transformComponent - Props Transformations', () => {
     it('transforms props correctly with various types and defaults', () => {
          const optionsAPIScript = given(`
-            import { defineComponent } from 'vue';
-
             export default defineComponent({
                 props: {
                     message: String,
@@ -49,8 +47,6 @@ describe('transformComponent - Props Transformations', () => {
 
     it('transforms props correctly when provided as an array of strings', () => {
          const optionsAPIScript = given(`
-            import { defineComponent } from 'vue';
-
             export default defineComponent({
                 props: ['message', 'count', 'isActive', 'user']
             });

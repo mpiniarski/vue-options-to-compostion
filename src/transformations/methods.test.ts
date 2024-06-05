@@ -3,8 +3,6 @@ import {given, thenExpect, whenScriptIsTransformed} from "./_testUtils";
 describe('transformComponent - Methods Transformations', () => {
     it('transforms methods correctly with parameters', () => {
         const optionsAPIScript = given(`
-            import { defineComponent } from 'vue';
-
             export default defineComponent({
                 methods: {
                     greet(name) {

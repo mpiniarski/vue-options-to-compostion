@@ -3,8 +3,6 @@ import { given, thenExpect, whenScriptIsTransformed } from './_testUtils';
 describe('transformComponent - BeforeCreate Transformations', () => {
     it('transforms beforeCreate lifecycle hook', () => {
         const optionsAPIScript = given(`
-            import { defineComponent } from 'vue';
-
             export default defineComponent({
                 beforeCreate() {
                     console.log('Component before create');

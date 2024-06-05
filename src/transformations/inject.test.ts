@@ -3,8 +3,6 @@ import { given, thenExpect, whenScriptIsTransformed } from './_testUtils';
 describe('transformComponent - Inject Transformations', () => {
     it('transforms inject property', () => {
         const optionsAPIScript = given(`
-            import { defineComponent } from 'vue';
-
             export default defineComponent({
                 inject: ['injectedValue']
             });
@@ -21,8 +19,6 @@ describe('transformComponent - Inject Transformations', () => {
 
     it('transforms inject property with object format', () => {
         const optionsAPIScript = given(`
-            import { defineComponent } from 'vue';
-
             export default defineComponent({
                 inject: {
                     injectedValue: {

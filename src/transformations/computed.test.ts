@@ -3,8 +3,6 @@ import {given, thenExpect, whenScriptIsTransformed} from "./_testUtils";
 describe('transformComponent - Computed Transformations', () => {
     it('transforms multiple computed properties correctly', () => {
         const optionsAPIScript = given(`
-            import { defineComponent } from 'vue';
-
             export default defineComponent({
                 computed: {
                     reversedMessage() {
@@ -31,8 +29,6 @@ describe('transformComponent - Computed Transformations', () => {
     });
     it('transforms computed property and adds .value to usages', () => {
         const optionsAPIScript = given(`
-            import { defineComponent } from 'vue';
-
             export default defineComponent({
                 computed: {
                     message() {

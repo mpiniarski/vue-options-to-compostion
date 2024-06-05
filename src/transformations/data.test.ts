@@ -3,8 +3,6 @@ import {given, thenExpect, whenScriptIsTransformed} from "./_testUtils";
 describe('transformComponent - Data Transformations', () => {
     it('transforms data property when it is an object', () => {
         const optionsAPIScript = given(`
-            import { defineComponent } from 'vue';
-
             export default defineComponent({
                 data: {
                     message: 'Hello',
@@ -25,8 +23,6 @@ describe('transformComponent - Data Transformations', () => {
 
     it.skip('transforms data property when it is a function returning object', () => {
         const optionsAPIScript = given(`
-            import { defineComponent } from 'vue';
-
             export default defineComponent({
                 data() {
                     return {
@@ -49,8 +45,6 @@ describe('transformComponent - Data Transformations', () => {
 
     it('transforms data property when it is an arrow function accepting vm and returning object', () => {
         const optionsAPIScript = given(`
-            import { defineComponent } from 'vue';
-
             export default defineComponent({
                 data: (vm) => ({
                     message: 'Hello',
@@ -71,8 +65,6 @@ describe('transformComponent - Data Transformations', () => {
 
     it('transforms data property and adds .value to usages', () => {
         const optionsAPIScript = given(`
-            import { defineComponent } from 'vue';
-
             export default defineComponent({
                 data: {
                     message: 'Hello',
