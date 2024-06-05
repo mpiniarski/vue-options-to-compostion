@@ -4,7 +4,9 @@ import generate from '@babel/generator';
 import type { TransformationContext } from '../transformComponent';
 
 export default (path: NodePath<t.ObjectProperty | t.ObjectMethod>, context: TransformationContext): string => {
-    const dataFunction = path.get('value') as NodePath<t.ObjectExpression> | NodePath<t.FunctionExpression> | NodePath<t.ArrowFunctionExpression> | NodePath<t.ObjectMethod>;
+    let dataFunction = path.isObjectMethod()
+            ? path
+            : path.get('value') as NodePath<t.ObjectExpression> | NodePath<t.FunctionExpression> | NodePath<t.ArrowFunctionExpression> | NodePath<t.ObjectMethod>;
     let properties: NodePath<t.ObjectProperty | t.ObjectMethod>[] = [];
 
     if (dataFunction.isObjectExpression()) {

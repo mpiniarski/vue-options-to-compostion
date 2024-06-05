@@ -21,7 +21,7 @@ describe('transformComponent - Data Transformations', () => {
         `);
     });
 
-    it.skip('transforms data property when it is a function returning object', () => {
+    it('transforms data property when it is a function returning object', () => {
         const optionsAPIScript = given(`
             export default defineComponent({
                 data() {
