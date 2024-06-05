@@ -97,8 +97,7 @@ export function transformComponent(scriptContent: string): string {
             if (
                 context.refIdentifiers.has(path.node.name) &&
                 !t.isMemberExpression(path.parent) &&
-                !(path.parentPath.isVariableDeclarator() && path.parentPath.get('id') === path) &&
-                !(path.parentPath.isAssignmentExpression() && path.parentPath.get('left') === path)
+                !(path.parentPath.isVariableDeclarator() && path.parentPath.get('id') === path)
             ) {
                 path.replaceWith(t.memberExpression(t.identifier(path.node.name), t.identifier('value')));
             }
