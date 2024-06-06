@@ -14,6 +14,7 @@ describe('transformComponent - BeforeMount Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { onBeforeMount } from 'vue';
             onBeforeMount(() => {
                 console.log('Component before mount');
             });

@@ -14,6 +14,7 @@ describe('transformComponent - Unmounted Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { onUnmounted } from 'vue';
             onUnmounted(() => {
                 console.log('Component unmounted');
             });

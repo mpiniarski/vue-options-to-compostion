@@ -14,6 +14,7 @@ describe('transformComponent - Mounted Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { onMounted } from 'vue';
             onMounted(() => {
                 console.log('Component mounted');
             });

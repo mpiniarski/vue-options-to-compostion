@@ -12,6 +12,7 @@ describe('transformComponent - Mixins Transformation', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { defineComponent } from 'vue';
             defineComponent({
                 mixins: [Mixin1, Mixin2]
             });

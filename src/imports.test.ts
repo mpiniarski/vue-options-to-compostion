@@ -27,6 +27,7 @@ describe('transformComponent - Imports Transformation', () => {
             import { ref } from 'vue';
             import { someFunction } from './someModule';
             import MyComponent from '@/components/MyComponent.vue';
+            import { defineComponent, ref } from 'vue';
             
             defineComponent({
                 name: 'TestComponent'

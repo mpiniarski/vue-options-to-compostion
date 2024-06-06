@@ -19,6 +19,7 @@ describe('transformComponent - Watch Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { watch } from 'vue';
             watch(() => message, (newValue, oldValue) => {
                 console.log('Message changed from', oldValue, 'to', newValue);
             });
@@ -47,6 +48,7 @@ describe('transformComponent - Watch Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { watch } from 'vue';
             watch(() => message, (newValue, oldValue) => {
                 console.log('Message changed from', oldValue, 'to', newValue);
             }, { 
@@ -74,6 +76,7 @@ describe('transformComponent - Watch Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { watch } from 'vue';
             watch(() => message, (newValue, oldValue) => {
                 console.log('Message changed from', oldValue, 'to', newValue);
             }, { 

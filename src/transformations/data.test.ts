@@ -15,6 +15,7 @@ describe('transformComponent - Data Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { ref } from 'vue';
             const message = ref('Hello');
             const count = ref(0);
             </script>
@@ -37,6 +38,7 @@ describe('transformComponent - Data Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { ref } from 'vue';
             const message = ref('Hello');
             const count = ref(0);
             </script>
@@ -57,6 +59,7 @@ describe('transformComponent - Data Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { ref } from 'vue';
             const message = ref('Hello');
             const count = ref(0);
             </script>
@@ -82,6 +85,7 @@ describe('transformComponent - Data Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { ref } from 'vue';
             const message = ref('Hello');
             const count = ref(0);
             function greet() {

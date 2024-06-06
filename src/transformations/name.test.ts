@@ -12,6 +12,7 @@ describe('transformComponent - Name Transformation', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { defineComponent } from 'vue';
             defineComponent({ 
               name: 'MyComponent' 
             });

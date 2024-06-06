@@ -14,6 +14,7 @@ describe('transformComponent - BeforeCreate Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { onBeforeCreate } from 'vue';
             onBeforeCreate(() => {
                 console.log('Component before create');
             });

@@ -14,6 +14,7 @@ describe('transformComponent - BeforeUpdate Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { onBeforeUpdate } from 'vue';
             onBeforeUpdate(() => {
                 console.log('Component before update');
             });

@@ -12,6 +12,7 @@ describe('transformComponent - Emits Transformation', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { defineEmits } from 'vue';
             const emit = defineEmits(['myEvent']);
             </script>
         `);
@@ -31,6 +32,7 @@ describe('transformComponent - Emits Transformation', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { defineEmits } from 'vue';
             const emit = defineEmits({
                 myEvent: null,
                 anotherEvent: payload => payload !== undefined

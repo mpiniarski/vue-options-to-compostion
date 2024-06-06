@@ -14,6 +14,7 @@ describe('transformComponent - Updated Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { onUpdated } from 'vue';
             onUpdated(() => {
                 console.log('Component updated');
             });

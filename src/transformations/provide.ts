@@ -2,8 +2,9 @@ import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import generate from '@babel/generator';
 import { transformFunctionBody } from './utils/transformFunction';
+import {TransformationContext} from "../transformComponent";
 
-export default (path: NodePath<t.ObjectProperty | t.ObjectMethod>): string => {
+export default (path: NodePath<t.ObjectProperty | t.ObjectMethod>, context: TransformationContext): string => {
     const methodBody = transformFunctionBody(path);
     let returnStatement: t.ReturnStatement | null = null;
     if (t.isBlockStatement(methodBody)) {
@@ -14,6 +15,9 @@ export default (path: NodePath<t.ObjectProperty | t.ObjectMethod>): string => {
         ? (returnStatement.argument as t.ObjectExpression).properties
         : [];
 
+    if(properties.length) {
+        context.usedHelpers.add('provide');
+    }
     return properties.map(prop => {
         if (!t.isObjectProperty(prop)) {
             throw new Error('Unsupported provide property type');

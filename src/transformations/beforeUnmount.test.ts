@@ -14,6 +14,7 @@ describe('transformComponent - BeforeUnmount Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { onBeforeUnmount } from 'vue';
             onBeforeUnmount(() => {
                 console.log('Component before unmount');
             });

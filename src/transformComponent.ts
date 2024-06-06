@@ -10,6 +10,7 @@ type Transformation = (path: NodePath<t.ObjectProperty | t.ObjectMethod>, contex
 
 export interface TransformationContext {
     refIdentifiers: Set<string>;
+    usedHelpers: Set<string>;
 }
 
 // Initialize componentOptions with transformations loaded from files
@@ -37,9 +38,10 @@ export function transformComponent(scriptContent: string): string {
 
     const scriptSetupLines: string[] = [];
     const refIdentifiers = new Set<string>();
+    const usedHelpers = new Set<string>();
     const importStatements: string[] = [];
 
-    const context: TransformationContext = { refIdentifiers };
+    const context: TransformationContext = { refIdentifiers, usedHelpers };
 
     traverse(ast, {
         ImportDeclaration(path) {
@@ -101,7 +103,9 @@ export function transformComponent(scriptContent: string): string {
         }
     });
 
-    const scriptSetup = `<script setup>\n${importStatements.join('\n')}\n${generate(setupAst).code}\n</script>`;
+    const importStatementsVue = usedHelpers.size ? [`import { ${[...usedHelpers].join(', ')} } from 'vue';`] : [];
+
+    const scriptSetup = `<script setup>\n${[...importStatements, ...importStatementsVue].join('\n')}\n${generate(setupAst).code}\n</script>`;
 
     return scriptSetup;
 }

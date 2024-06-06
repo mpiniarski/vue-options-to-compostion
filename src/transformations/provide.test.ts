@@ -16,6 +16,7 @@ describe('transformComponent - Provide Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { provide } from 'vue';
             provide('provideKey', 'value');
             </script>
         `);

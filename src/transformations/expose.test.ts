@@ -12,6 +12,7 @@ describe('transformComponent - Expose Transformation', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { defineExpose } from 'vue';
             const expose = defineExpose(['myMethod']);
             </script>
         `);

@@ -12,6 +12,7 @@ describe('transformComponent - Inject Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { inject } from 'vue';
             const injectedValue = inject('injectedValue');
             </script>
         `);
@@ -33,6 +34,7 @@ describe('transformComponent - Inject Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { inject } from 'vue';
             const injectedValue = inject('provideKey', 'defaultValue');
             </script>
         `);

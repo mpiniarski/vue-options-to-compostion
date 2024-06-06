@@ -1,10 +1,10 @@
-import { NodePath } from '@babel/traverse';
+import {NodePath} from '@babel/traverse';
 import * as t from '@babel/types';
 import generate from '@babel/generator';
-import type { TransformationContext } from '../transformComponent';
+import type {TransformationContext} from '../transformComponent';
 
 export default (path: NodePath<t.ObjectProperty | t.ObjectMethod>, context: TransformationContext): string => {
-    let dataFunction = path.isObjectMethod()
+    const dataFunction = path.isObjectMethod()
             ? path
             : path.get('value') as NodePath<t.ObjectExpression> | NodePath<t.FunctionExpression> | NodePath<t.ArrowFunctionExpression> | NodePath<t.ObjectMethod>;
     let properties: NodePath<t.ObjectProperty | t.ObjectMethod>[] = [];
@@ -21,6 +21,10 @@ export default (path: NodePath<t.ObjectProperty | t.ObjectMethod>, context: Tran
         } else if (body.isObjectExpression()) {
             properties = body.get('properties') as NodePath<t.ObjectProperty | t.ObjectMethod>[];
         }
+    }
+
+    if (properties.length) {
+        context.usedHelpers.add('ref');
     }
 
     return properties.map(prop => {

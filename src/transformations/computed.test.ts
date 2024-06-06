@@ -18,6 +18,7 @@ describe('transformComponent - Computed Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { computed } from 'vue';
             const reversedMessage = computed(() => {
                 return message.split('').reverse().join('');
             });
@@ -50,6 +51,7 @@ describe('transformComponent - Computed Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { computed } from 'vue';
             const message = computed(() => {
               return 'Hello';
             });

@@ -26,6 +26,7 @@ describe('transformComponent - Props Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { defineProps } from 'vue';
             const props = defineProps({
                 message: String,
                 count: {
@@ -56,6 +57,7 @@ describe('transformComponent - Props Transformations', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { defineProps } from 'vue';
             const props = defineProps(['message', 'count', 'isActive', 'user']);
             </script>
         `);
