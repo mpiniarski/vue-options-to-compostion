@@ -119,6 +119,9 @@ export function transformComponent(scriptContent: string): string {
                         )
                 );
             }
+            if (path.node.name === '$emit') {
+                path.replaceWith(t.identifier('emit'));
+            }
         },
         MemberExpression(memberPath) {
             if (
