@@ -1,9 +1,9 @@
-import { parse } from '@babel/parser';
-import traverse, { NodePath } from '@babel/traverse';
+import {parse} from '@babel/parser';
+import traverse, {NodePath} from '@babel/traverse';
 import * as t from '@babel/types';
 import generate from '@babel/generator';
-import { readdirSync } from 'fs';
-import { join, extname, basename } from 'path';
+import {readdirSync} from 'fs';
+import {basename, extname, join} from 'path';
 
 // Define the Transformation type
 type Transformation = (path: NodePath<t.ObjectProperty | t.ObjectMethod>, context: TransformationContext) => string;
@@ -26,7 +26,7 @@ const componentOptions: Record<string, Transformation> = (() => {
 
         // Check for valid TypeScript files excluding test and helper files
         if (fileExt === '.ts' && !file.endsWith('.test.ts') && !file.startsWith('_')) {
-            const { default: transform } = require(join(transformationsDir, file));
+            const {default: transform} = require(join(transformationsDir, file));
             options[fileName] = transform;
         }
     });
@@ -35,15 +35,16 @@ const componentOptions: Record<string, Transformation> = (() => {
 })();
 
 export function transformComponent(scriptContent: string): string {
-    const ast = parse(scriptContent, { sourceType: 'module', plugins: ['jsx'] });
+    const ast = parse(scriptContent, {sourceType: 'module', plugins: ['jsx']});
 
     const scriptSetupLines: string[] = [];
     const refIdentifiers = new Set<string>();
     const usedHelpers = new Set<string>();
     const propIdentifiers = new Set<string>();
     const importStatements: string[] = [];
+    const refDeclarations: string[] = [];
 
-    const context: TransformationContext = { refIdentifiers, usedHelpers, propIdentifiers };
+    const context: TransformationContext = {refIdentifiers, usedHelpers, propIdentifiers};
 
     traverse(ast, {
         ImportDeclaration(path) {
@@ -91,23 +92,37 @@ export function transformComponent(scriptContent: string): string {
     });
 
     const scriptSetupCode = scriptSetupLines.join('\n');
-    const setupAst = parse(scriptSetupCode, { sourceType: 'module', plugins: ['jsx'] });
-
+    const setupAst = parse(scriptSetupCode, {sourceType: 'module', plugins: ['jsx']});
     traverse(setupAst, {
         Identifier(path) {
             if (
-                context.refIdentifiers.has(path.node.name) &&
-                !t.isMemberExpression(path.parent) &&
-                !(path.parentPath.isVariableDeclarator() && path.parentPath.get('id') === path)
+                    context.refIdentifiers.has(path.node.name) &&
+                    !t.isMemberExpression(path.parent) &&
+                    !(path.parentPath.isVariableDeclarator() && path.parentPath.get('id') === path)
             ) {
                 path.replaceWith(t.memberExpression(t.identifier(path.node.name), t.identifier('value')));
             }
             if (
-                context.propIdentifiers.has(path.node.name) &&
+                    context.propIdentifiers.has(path.node.name) &&
                     !path.parentPath.isObjectProperty() &&
                     !t.isMemberExpression(path.parent)
             ) {
                 path.replaceWith(t.memberExpression(t.identifier('props'), t.identifier(path.node.name)));
+            }
+        },
+        MemberExpression(memberPath) {
+            if (
+                t.isIdentifier(memberPath.node.object, {name: '$refs'}) &&
+                t.isIdentifier(memberPath.node.property )
+            ) {
+                const refName = memberPath.node.property.name;
+                refDeclarations.push(`const ${refName} = ref<HTMLElement>();`);
+                memberPath.replaceWith(
+                        t.memberExpression(
+                                t.identifier(refName),
+                                t.identifier('value')
+                        )
+                );
             }
         }
     });
@@ -116,6 +131,7 @@ export function transformComponent(scriptContent: string): string {
 
     const scriptSetup = `<script setup>
 ${[...importStatements, ...importStatementsVue].join('\n')}
+${refDeclarations.join('\n')}
 ${generate(setupAst).code}
 </script>`;
 
