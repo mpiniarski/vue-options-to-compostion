@@ -43,6 +43,7 @@ export function transformComponent(scriptContent: string): string {
     const propIdentifiers = new Set<string>();
     const importStatements: string[] = [];
     const refDeclarations: string[] = [];
+    let hasElReference = false;
 
     const context: TransformationContext = {refIdentifiers, usedHelpers, propIdentifiers};
 
@@ -109,11 +110,20 @@ export function transformComponent(scriptContent: string): string {
             ) {
                 path.replaceWith(t.memberExpression(t.identifier('props'), t.identifier(path.node.name)));
             }
+            if (path.node.name === '$el') {
+                hasElReference = true;
+                path.replaceWith(
+                        t.memberExpression(
+                                t.identifier('root'),
+                                t.identifier('value')
+                        )
+                );
+            }
         },
         MemberExpression(memberPath) {
             if (
-                t.isIdentifier(memberPath.node.object, {name: '$refs'}) &&
-                t.isIdentifier(memberPath.node.property )
+                    t.isIdentifier(memberPath.node.object, {name: '$refs'}) &&
+                    t.isIdentifier(memberPath.node.property)
             ) {
                 const refName = memberPath.node.property.name;
                 refDeclarations.push(`const ${refName} = ref<HTMLElement>();`);
@@ -126,6 +136,10 @@ export function transformComponent(scriptContent: string): string {
             }
         }
     });
+
+    if (hasElReference) {
+        refDeclarations.unshift('// TODO: add this ref to root element in the template', 'const root = ref<HTMLElement>();');
+    }
 
     const importStatementsVue = usedHelpers.size ? [`import { ${[...usedHelpers].join(', ')} } from 'vue';`] : [];
 
