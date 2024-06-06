@@ -122,6 +122,9 @@ export function transformComponent(scriptContent: string): string {
             if (path.node.name === '$emit') {
                 path.replaceWith(t.identifier('emit'));
             }
+            if (path.node.name === '$nextTick') {
+                path.replaceWith(t.identifier('nextTick'));
+            }
         },
         MemberExpression(memberPath) {
             if (
