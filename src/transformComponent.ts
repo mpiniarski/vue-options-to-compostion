@@ -11,6 +11,7 @@ type Transformation = (path: NodePath<t.ObjectProperty | t.ObjectMethod>, contex
 export interface TransformationContext {
     refIdentifiers: Set<string>;
     usedHelpers: Set<string>;
+    propIdentifiers: Set<string>;
 }
 
 // Initialize componentOptions with transformations loaded from files
@@ -39,9 +40,10 @@ export function transformComponent(scriptContent: string): string {
     const scriptSetupLines: string[] = [];
     const refIdentifiers = new Set<string>();
     const usedHelpers = new Set<string>();
+    const propIdentifiers = new Set<string>();
     const importStatements: string[] = [];
 
-    const context: TransformationContext = { refIdentifiers, usedHelpers };
+    const context: TransformationContext = { refIdentifiers, usedHelpers, propIdentifiers };
 
     traverse(ast, {
         ImportDeclaration(path) {
@@ -100,12 +102,22 @@ export function transformComponent(scriptContent: string): string {
             ) {
                 path.replaceWith(t.memberExpression(t.identifier(path.node.name), t.identifier('value')));
             }
+            if (
+                context.propIdentifiers.has(path.node.name) &&
+                    !path.parentPath.isObjectProperty() &&
+                    !t.isMemberExpression(path.parent)
+            ) {
+                path.replaceWith(t.memberExpression(t.identifier('props'), t.identifier(path.node.name)));
+            }
         }
     });
 
     const importStatementsVue = usedHelpers.size ? [`import { ${[...usedHelpers].join(', ')} } from 'vue';`] : [];
 
-    const scriptSetup = `<script setup>\n${[...importStatements, ...importStatementsVue].join('\n')}\n${generate(setupAst).code}\n</script>`;
+    const scriptSetup = `<script setup>
+${[...importStatements, ...importStatementsVue].join('\n')}
+${generate(setupAst).code}
+</script>`;
 
     return scriptSetup;
 }

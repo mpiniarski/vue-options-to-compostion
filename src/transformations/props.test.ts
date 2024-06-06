@@ -62,4 +62,58 @@ describe('transformComponent - Props Transformations', () => {
             </script>
         `);
     });
+
+    it('transforms props correctly with references to props in other places', () => {
+        const optionsAPIScript = given(`
+            export default defineComponent({
+                props: {
+                    message: String,
+                    count: {
+                        type: Number,
+                        default: 0
+                    },
+                    isActive: {
+                        type: Boolean,
+                        default: false
+                    },
+                    user: {
+                        type: Object,
+                        required: false
+                    }
+                },
+                methods: {
+                    test() {
+                        return this.count * 2;
+                    }
+                },
+            });
+        `);
+
+        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+
+        thenExpect(compositionAPIScript).toEqualScript(`
+            <script setup>
+            import { defineProps } from 'vue';
+            const props = defineProps({
+                message: String,
+                count: {
+                    type: Number,
+                    default: 0
+                },
+                isActive: {
+                    type: Boolean,
+                    default: false
+                },
+                user: {
+                    type: Object,
+                    required: false
+                }
+            });
+            
+            function test() {
+                return props.count * 2;
+            }
+            </script>
+        `);
+    });
 });
