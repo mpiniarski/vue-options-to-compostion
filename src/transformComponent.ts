@@ -35,7 +35,7 @@ const componentOptions: Record<string, Transformation> = (() => {
 })();
 
 export function transformComponent(scriptContent: string): string {
-    const ast = parse(scriptContent, {sourceType: 'module', plugins: ['jsx']});
+    const ast = parse(scriptContent, {sourceType: 'module', plugins: ["typescript"]});
 
     const scriptSetupLines: string[] = [];
     const refIdentifiers = new Set<string>();
@@ -93,7 +93,7 @@ export function transformComponent(scriptContent: string): string {
     });
 
     const scriptSetupCode = scriptSetupLines.join('\n');
-    const setupAst = parse(scriptSetupCode, {sourceType: 'module', plugins: ['jsx']});
+    const setupAst = parse(scriptSetupCode, {sourceType: 'module', plugins: ["typescript"]});
     traverse(setupAst, {
         Identifier(path) {
             if (
