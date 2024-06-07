@@ -33,7 +33,9 @@ ${transformComponent(scriptContent)}
             console.log(`Transformed file written to ${destinationFilePath}`);
         } else if (fileExtension === '.ts' || fileExtension === '.js') {
             newScriptContent = transformComponent(scriptContent);
-            await fs.writeFile(destinationFilePath, newScriptContent, 'utf-8');
+            const functionName = path.basename(destinationFilePath, fileExtension);
+            const exportedFunction = `export default function ${functionName}() {${newScriptContent}}`;
+            await fs.writeFile(destinationFilePath, exportedFunction, 'utf-8');
             console.log(`Transformed file written to ${destinationFilePath}`);
         } else {
             console.error('Unsupported file extension. Please provide a .vue, .ts, or .js file.');
