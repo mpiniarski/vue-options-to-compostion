@@ -1,6 +1,6 @@
-import { given, thenExpect, whenScriptIsTransformed } from './transformations/_testUtils';
+import { given, thenExpect, whenScriptIsTransformedToComponent } from './transformations/_testUtils';
 
-describe('transformComponent - Emit Transformation', () => {
+describe('transformToCompositionAPI - Emit Transformation', () => {
     it('transforms $emit references to emit', () => {
         const optionsAPIScript = given(`
             export default defineComponent({
@@ -12,7 +12,7 @@ describe('transformComponent - Emit Transformation', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>

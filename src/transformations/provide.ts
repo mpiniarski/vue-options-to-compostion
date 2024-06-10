@@ -2,7 +2,7 @@ import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import generate from '@babel/generator';
 import { transformFunctionBody } from './utils/transformFunction';
-import {TransformationContext} from "../transformComponent";
+import {TransformationContext} from "../transformToCompositionAPI";
 
 export default (path: NodePath<t.ObjectProperty | t.ObjectMethod>, context: TransformationContext): string => {
     const methodBody = transformFunctionBody(path);

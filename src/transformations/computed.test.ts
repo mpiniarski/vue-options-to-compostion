@@ -1,6 +1,6 @@
-import {given, thenExpect, whenScriptIsTransformed} from "./_testUtils";
+import {given, thenExpect, whenScriptIsTransformedToComponent} from "./_testUtils";
 
-describe('transformComponent - Computed Transformations', () => {
+describe('transformToCompositionAPI - Computed Transformations', () => {
     it('transforms multiple computed properties correctly', () => {
         const optionsAPIScript = given(`
             export default defineComponent({
@@ -14,7 +14,7 @@ describe('transformComponent - Computed Transformations', () => {
                 }
             });
         `);
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
@@ -47,7 +47,7 @@ describe('transformComponent - Computed Transformations', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>

@@ -1,6 +1,6 @@
-import { given, thenExpect, whenScriptIsTransformed } from './_testUtils';
+import { given, thenExpect, whenScriptIsTransformedToComponent } from './_testUtils';
 
-describe('transformComponent - Name Transformation', () => {
+describe('transformToCompositionAPI - Name Transformation', () => {
     it('transforms name property', () => {
         const optionsAPIScript = given(`
             export default defineComponent({
@@ -8,7 +8,7 @@ describe('transformComponent - Name Transformation', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>

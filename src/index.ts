@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs/promises';
-import {readScriptTag, replaceScriptTag} from './vueFileManipulation';
-import {transformComponent} from './transformComponent';
+import { readScriptTag, replaceScriptTag } from './vueFileManipulation';
+import { transformToCompositionAPI } from './transformToCompositionAPI';
 
 // Main function to handle CLI input
 (async () => {
@@ -13,8 +13,8 @@ import {transformComponent} from './transformComponent';
 
     const sourceFilePath = path.resolve(args[0]);
     const destinationFilePath = args[1]
-            ? path.resolve(args[1])
-            : path.join(path.dirname(sourceFilePath), `${path.basename(sourceFilePath, path.extname(sourceFilePath))}-composition${path.extname(sourceFilePath)}`);
+        ? path.resolve(args[1])
+        : path.join(path.dirname(sourceFilePath), `${path.basename(sourceFilePath, path.extname(sourceFilePath))}-composition${path.extname(sourceFilePath)}`);
 
     const fileContent = await fs.readFile(sourceFilePath, 'utf-8');
     const fileExtension = path.extname(sourceFilePath);
@@ -25,17 +25,17 @@ import {transformComponent} from './transformComponent';
 
         if (fileExtension === '.vue') {
             scriptContent = await readScriptTag(fileContent);
-            newScriptContent = `<script setup>
-${transformComponent(scriptContent)}
-</script>`;
+            newScriptContent = transformToCompositionAPI(scriptContent, 'component');
             const newFileContent = replaceScriptTag(fileContent, newScriptContent);
             await fs.writeFile(destinationFilePath, newFileContent, 'utf-8');
             console.log(`Transformed file written to ${destinationFilePath}`);
         } else if (fileExtension === '.ts' || fileExtension === '.js') {
-            newScriptContent = transformComponent(scriptContent);
+            newScriptContent = transformToCompositionAPI(scriptContent, 'composable');
             const functionName = path.basename(destinationFilePath, fileExtension);
-            const exportedFunction = `export default function ${functionName}() {${newScriptContent}}`;
-            await fs.writeFile(destinationFilePath, exportedFunction, 'utf-8');
+            const finalCode = `
+${newScriptContent}
+`;
+            await fs.writeFile(destinationFilePath, finalCode, 'utf-8');
             console.log(`Transformed file written to ${destinationFilePath}`);
         } else {
             console.error('Unsupported file extension. Please provide a .vue, .ts, or .js file.');

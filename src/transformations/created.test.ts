@@ -1,6 +1,6 @@
-import { given, thenExpect, whenScriptIsTransformed } from './_testUtils';
+import { given, thenExpect, whenScriptIsTransformedToComponent } from './_testUtils';
 
-describe('transformComponent - Created Transformations', () => {
+describe('transformToCompositionAPI - Created Transformations', () => {
     it('transforms created lifecycle hook', () => {
         const optionsAPIScript = given(`
             export default defineComponent({
@@ -10,7 +10,7 @@ describe('transformComponent - Created Transformations', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>

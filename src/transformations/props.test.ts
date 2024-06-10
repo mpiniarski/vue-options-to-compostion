@@ -1,6 +1,6 @@
-import {given, thenExpect, whenScriptIsTransformed} from "./_testUtils";
+import {given, thenExpect, whenScriptIsTransformedToComponent} from "./_testUtils";
 
-describe('transformComponent - Props Transformations', () => {
+describe('transformToCompositionAPI - Props Transformations', () => {
     it('transforms props correctly with various types and defaults', () => {
          const optionsAPIScript = given(`
             export default defineComponent({
@@ -22,7 +22,7 @@ describe('transformComponent - Props Transformations', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
@@ -53,7 +53,7 @@ describe('transformComponent - Props Transformations', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
@@ -89,7 +89,7 @@ describe('transformComponent - Props Transformations', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>

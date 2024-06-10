@@ -1,6 +1,6 @@
-import {given, thenExpect, whenScriptIsTransformed} from "./_testUtils";
+import {given, thenExpect, whenScriptIsTransformedToComponent} from "./_testUtils";
 
-describe('transformComponent - Watch Transformations', () => {
+describe('transformToCompositionAPI - Watch Transformations', () => {
     it('transforms multiple watch properties correctly', () => {
         const optionsAPIScript = given(`
             export default defineComponent({
@@ -15,7 +15,7 @@ describe('transformComponent - Watch Transformations', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
@@ -44,7 +44,7 @@ describe('transformComponent - Watch Transformations', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
@@ -72,7 +72,7 @@ describe('transformComponent - Watch Transformations', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>

@@ -1,6 +1,6 @@
-import { given, thenExpect, whenScriptIsTransformed } from './_testUtils';
+import { given, thenExpect, whenScriptIsTransformedToComponent } from './_testUtils';
 
-describe('transformComponent - Mixins Transformation', () => {
+describe('transformToCompositionAPI - Mixins Transformation', () => {
     it('handles mixins property and leaves it inside defineComponent', () => {
         const optionsAPIScript = given(`
             export default defineComponent({
@@ -8,7 +8,7 @@ describe('transformComponent - Mixins Transformation', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>

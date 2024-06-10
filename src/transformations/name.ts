@@ -1,6 +1,6 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import {TransformationContext} from "../transformComponent";
+import {TransformationContext} from "../transformToCompositionAPI";
 
 export default (path: NodePath<t.ObjectProperty>, context: TransformationContext): string => {
     if (t.isStringLiteral(path.node.value)) {

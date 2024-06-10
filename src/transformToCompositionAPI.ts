@@ -10,6 +10,7 @@ type Transformation = (path: NodePath<t.ObjectProperty | t.ObjectMethod>, contex
 
 export interface TransformationContext {
     refIdentifiers: Set<string>;
+    functionIdentifiers: Set<string>;
     usedHelpers: Set<string>;
     propIdentifiers: Set<string>;
 }
@@ -34,18 +35,19 @@ const componentOptions: Record<string, Transformation> = (() => {
     return options;
 })();
 
-export function transformComponent(scriptContent: string): string {
+export function transformToCompositionAPI(scriptContent: string, type: 'component' | 'composable'): string {
     const ast = parse(scriptContent, {sourceType: 'module', plugins: ["typescript"]});
 
     const scriptSetupLines: string[] = [];
     const refIdentifiers = new Set<string>();
+    const functionIdentifiers = new Set<string>();
     const usedHelpers = new Set<string>();
     const propIdentifiers = new Set<string>();
     const importStatements: string[] = [];
     const refDeclarations: string[] = [];
     let hasElReference = false;
 
-    const context: TransformationContext = {refIdentifiers, usedHelpers, propIdentifiers};
+    const context: TransformationContext = {refIdentifiers, functionIdentifiers, usedHelpers, propIdentifiers};
 
     traverse(ast, {
         ImportDeclaration(path) {
@@ -97,26 +99,26 @@ export function transformComponent(scriptContent: string): string {
     traverse(setupAst, {
         Identifier(path) {
             if (
-                    context.refIdentifiers.has(path.node.name) &&
-                    !t.isMemberExpression(path.parent) &&
-                    !(path.parentPath.isVariableDeclarator() && path.parentPath.get('id') === path)
+                context.refIdentifiers.has(path.node.name) &&
+                !t.isMemberExpression(path.parent) &&
+                !(path.parentPath.isVariableDeclarator() && path.parentPath.get('id') === path)
             ) {
                 path.replaceWith(t.memberExpression(t.identifier(path.node.name), t.identifier('value')));
             }
             if (
-                    context.propIdentifiers.has(path.node.name) &&
-                    !path.parentPath.isObjectProperty() &&
-                    !t.isMemberExpression(path.parent)
+                context.propIdentifiers.has(path.node.name) &&
+                !path.parentPath.isObjectProperty() &&
+                !t.isMemberExpression(path.parent)
             ) {
                 path.replaceWith(t.memberExpression(t.identifier('props'), t.identifier(path.node.name)));
             }
             if (path.node.name === '$el') {
                 hasElReference = true;
                 path.replaceWith(
-                        t.memberExpression(
-                                t.identifier('root'),
-                                t.identifier('value')
-                        )
+                    t.memberExpression(
+                        t.identifier('root'),
+                        t.identifier('value')
+                    )
                 );
             }
             if (path.node.name === '$emit') {
@@ -128,16 +130,16 @@ export function transformComponent(scriptContent: string): string {
         },
         MemberExpression(memberPath) {
             if (
-                    t.isIdentifier(memberPath.node.object, {name: '$refs'}) &&
-                    t.isIdentifier(memberPath.node.property)
+                t.isIdentifier(memberPath.node.object, {name: '$refs'}) &&
+                t.isIdentifier(memberPath.node.property)
             ) {
                 const refName = memberPath.node.property.name;
                 refDeclarations.push(`const ${refName} = ref<HTMLElement>();`);
                 memberPath.replaceWith(
-                        t.memberExpression(
-                                t.identifier(refName),
-                                t.identifier('value')
-                        )
+                    t.memberExpression(
+                        t.identifier(refName),
+                        t.identifier('value')
+                    )
                 );
             }
         }
@@ -149,11 +151,33 @@ export function transformComponent(scriptContent: string): string {
 
     const importStatementsVue = usedHelpers.size ? [`import { ${[...usedHelpers].join(', ')} } from 'vue';`] : [];
 
-    const scriptSetup = `<script setup>
-${[...importStatements, ...importStatementsVue].join('\n')}
+    const scriptSetup = `
 ${refDeclarations.join('\n')}
 ${generate(setupAst).code}
+`;
+
+    if (type === 'component') {
+        return `<script setup>
+${[...importStatements, ...importStatementsVue].join('\n')}
+${scriptSetup}
 </script>`;
+    } else if (type === 'composable') {
+        const returnStatement = `
+return {
+${Array.from(refIdentifiers).map(ref => `    ${ref}`).join(',\n')}
+${Array.from(functionIdentifiers).map(func => `    ${func}`).join(',\n')}
+};
+`;
+
+        const functionName = 'useXXX';
+        return `
+${[...importStatements, ...importStatementsVue].join('\n')}
+export default function ${functionName}() {
+${scriptSetup}
+${returnStatement}
+}
+`;
+    }
 
     return scriptSetup;
 }

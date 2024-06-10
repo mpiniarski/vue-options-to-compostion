@@ -1,6 +1,6 @@
-import {given, thenExpect, whenScriptIsTransformed} from "./_testUtils";
+import {given, thenExpect, whenScriptIsTransformedToComponent} from "./_testUtils";
 
-describe('transformComponent - Data Transformations', () => {
+describe('transformToCompositionAPI - Data Transformations', () => {
     it('transforms data property when it is an object', () => {
         const optionsAPIScript = given(`
             export default defineComponent({
@@ -11,7 +11,7 @@ describe('transformComponent - Data Transformations', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
@@ -34,7 +34,7 @@ describe('transformComponent - Data Transformations', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
@@ -55,7 +55,7 @@ describe('transformComponent - Data Transformations', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
@@ -81,7 +81,7 @@ describe('transformComponent - Data Transformations', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>

@@ -1,6 +1,6 @@
-import { given, thenExpect, whenScriptIsTransformed } from './transformations/_testUtils';
+import { given, thenExpect, whenScriptIsTransformedToComponent } from './transformations/_testUtils';
 
-describe('transformComponent - Imports Transformation', () => {
+describe('transformToCompositionAPI - Imports Transformation', () => {
     it('keeps the imports in the transformed script', () => {
         const optionsAPIScript = given(`
             import { ref } from 'vue';
@@ -20,7 +20,7 @@ describe('transformComponent - Imports Transformation', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>

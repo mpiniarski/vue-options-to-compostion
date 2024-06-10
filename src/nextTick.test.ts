@@ -1,6 +1,6 @@
-import { given, thenExpect, whenScriptIsTransformed } from './transformations/_testUtils';
+import { given, thenExpect, whenScriptIsTransformedToComponent } from './transformations/_testUtils';
 
-describe('transformComponent - nextTick Transformation', () => {
+describe('transformToCompositionAPI - nextTick Transformation', () => {
     it('transforms $nextTick references to nextTick', () => {
         const optionsAPIScript = given(`
             export default defineComponent({
@@ -14,7 +14,7 @@ describe('transformComponent - nextTick Transformation', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>

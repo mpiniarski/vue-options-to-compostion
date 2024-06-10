@@ -1,6 +1,6 @@
-import { given, thenExpect, whenScriptIsTransformed } from './_testUtils';
+import { given, thenExpect, whenScriptIsTransformedToComponent } from './_testUtils';
 
-describe('transformComponent - Expose Transformation', () => {
+describe('transformToCompositionAPI - Expose Transformation', () => {
     it('handles expose option', () => {
         const optionsAPIScript = given(`
             export default defineComponent({
@@ -8,7 +8,7 @@ describe('transformComponent - Expose Transformation', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>

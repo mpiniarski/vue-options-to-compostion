@@ -1,6 +1,6 @@
-import { given, thenExpect, whenScriptIsTransformed } from './transformations/_testUtils';
+import { given, thenExpect, whenScriptIsTransformedToComponent } from './transformations/_testUtils';
 
-describe('transformComponent - Refs Transformation', () => {
+describe('transformToCompositionAPI - Refs Transformation', () => {
     it('transforms $refs references to ref declarations', () => {
         const optionsAPIScript = given(`
             export default defineComponent({
@@ -12,7 +12,7 @@ describe('transformComponent - Refs Transformation', () => {
             });
         `);
 
-        const compositionAPIScript = whenScriptIsTransformed(optionsAPIScript);
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>

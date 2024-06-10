@@ -1,13 +1,16 @@
-import {transformComponent} from '../transformComponent';
+import {transformToCompositionAPI} from '../transformToCompositionAPI';
 
 export function given(script: string) {
     return script;
 }
 
-export function whenScriptIsTransformed(script: string) {
-    return transformComponent(script);
+export function whenScriptIsTransformedToComponent(script: string) {
+    return transformToCompositionAPI(script, "component");
 }
 
+export function whenScriptIsTransformedToComposable(script: string) {
+    return transformToCompositionAPI(script, "composable");
+}
 
 function normalizeScript(script: string): string {
     return script
