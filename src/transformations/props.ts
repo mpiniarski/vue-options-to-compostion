@@ -5,7 +5,6 @@ import { TransformationContext } from "../transformToCompositionAPI";
 
 export default (path: NodePath<t.ObjectProperty | t.ObjectMethod>, context: TransformationContext): string => {
     if (t.isObjectProperty(path.node)) {
-        const key = path.node.key as t.Identifier;
         const value = path.get('value') as NodePath<t.Expression>;
 
         // Check if value is an array
