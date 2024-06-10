@@ -43,7 +43,7 @@ export function transformToCompositionAPI(scriptContent: string, type: 'componen
   const functionIdentifiers = new Set<string>();
   const usedHelpers = new Set<string>();
   const propIdentifiers = new Set<string>();
-  const importStatements: string[] = [];
+  const globalStatements: string[] = [];
   const refDeclarations: string[] = [];
   let hasElReference = false;
 
@@ -55,8 +55,10 @@ export function transformToCompositionAPI(scriptContent: string, type: 'componen
   };
 
   traverse(ast, {
-    ImportDeclaration(path) {
-      importStatements.push(generate(path.node).code);
+    Statement(path) {
+      if(path.parentPath.isProgram() && !path.isExportDefaultDeclaration()) {
+        globalStatements.push(generate(path.node).code);
+      }
     },
     ExportDefaultDeclaration(path) {
       const declaration = path.node.declaration;
@@ -163,7 +165,7 @@ ${generate(setupAst).code}
 
   if (type === 'component') {
     return `<script setup>
-${[...importStatements, ...importStatementsVue].join('\n')}
+${[...importStatementsVue, ...globalStatements].join('\n')}
 ${scriptSetup}
 </script>`;
   } else if (type === 'composable') {
@@ -176,7 +178,7 @@ ${Array.from(functionIdentifiers).map(func => `    ${func}`).join(',\n')}
 
     const functionName = 'useXXX';
     return `
-${[...importStatements, ...importStatementsVue].join('\n')}
+${[...importStatementsVue, ...globalStatements].join('\n')}
 export default function ${functionName}() {
 ${scriptSetup}
 ${returnStatement}

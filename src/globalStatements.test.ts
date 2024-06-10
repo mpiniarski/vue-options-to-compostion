@@ -1,11 +1,13 @@
 import { given, thenExpect, whenScriptIsTransformedToComponent } from './transformations/_testUtils';
 
-describe('transformToCompositionAPI - Imports Transformation', () => {
-    it('keeps the imports in the transformed script', () => {
+describe('transformToCompositionAPI - global statements Transformation', () => {
+    it('keeps the global statements in the transformed script', () => {
         const optionsAPIScript = given(`
             import { ref } from 'vue';
             import { someFunction } from './someModule';
             import MyComponent from '@/components/MyComponent.vue';
+            
+            const TEST = "test";
 
             export default defineComponent({
                 name: 'TestComponent',
@@ -24,10 +26,12 @@ describe('transformToCompositionAPI - Imports Transformation', () => {
 
         thenExpect(compositionAPIScript).toEqualScript(`
             <script setup>
+            import { defineComponent, ref } from 'vue';
             import { ref } from 'vue';
             import { someFunction } from './someModule';
             import MyComponent from '@/components/MyComponent.vue';
-            import { defineComponent, ref } from 'vue';
+            
+            const TEST = "test";
             
             defineComponent({
                 name: 'TestComponent'
