@@ -56,7 +56,7 @@ export function transformToCompositionAPI(scriptContent: string, type: 'componen
 
   traverse(ast, {
     Statement(path) {
-      if(path.parentPath.isProgram() && !path.isExportDefaultDeclaration()) {
+      if (path.parentPath.isProgram() && !path.isExportDefaultDeclaration()) {
         globalStatements.push(generate(path.node).code);
       }
     },
@@ -107,7 +107,7 @@ export function transformToCompositionAPI(scriptContent: string, type: 'componen
     Identifier(path) {
       if (
         context.refIdentifiers.has(path.node.name) &&
-        !((t.isMemberExpression(path.parent) || t.isOptionalMemberExpression(path.parent)) && t.isIdentifier(path.parent.property, { name: 'value' })) &&
+        !((t.isMemberExpression(path.parent) || t.isOptionalMemberExpression(path.parent)) && (t.isIdentifier(path.parent.property, { name: 'value' }) || t.isIdentifier(path.parent.property, { name: path.node.name }))) &&
         !(path.parentPath.isVariableDeclarator() && path.parentPath.get('id') === path)
       ) {
         path.replaceWith(t.memberExpression(path.node, t.identifier('value')));
