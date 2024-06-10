@@ -17,7 +17,7 @@ describe('transformToCompositionAPI - Mixin Type Transformation', () => {
 
         thenExpect(composableScript).toEqualScript(`
             import { ref } from 'vue';
-            export default function useXXX() {
+            export default function useXXX(props) {
                 const message = ref('Hello');
                 const count = ref(0);
                 return {
@@ -45,7 +45,7 @@ describe('transformToCompositionAPI - Mixin Type Transformation', () => {
         const composableScript = whenScriptIsTransformedToComposable(optionsAPIScript);
 
         thenExpect(composableScript).toEqualScript(`
-            export default function useXXX() {
+            export default function useXXX(props) {
                 function greet(name) {
                     console.log(\`Hello \${name}\`);
                 }
@@ -73,7 +73,7 @@ describe('transformToCompositionAPI - Mixin Type Transformation', () => {
 
         thenExpect(composableScript).toEqualScript(`
             import { onMounted } from 'vue';
-            export default function useXXX() {
+            export default function useXXX(props) {
                 onMounted(() => {
                     console.log('Component mounted');
                 });

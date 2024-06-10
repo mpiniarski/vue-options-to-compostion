@@ -3,7 +3,7 @@ import * as t from '@babel/types';
 import generate from '@babel/generator';
 import { TransformationContext } from "../transformToCompositionAPI";
 
-export default (path: NodePath<t.ObjectProperty | t.ObjectMethod>, context: TransformationContext): string => {
+export default (path: NodePath<t.ObjectProperty | t.ObjectMethod>, context: TransformationContext, type: 'component' | 'composable'): string => {
     if (t.isObjectProperty(path.node)) {
         const value = path.get('value') as NodePath<t.Expression>;
 
@@ -25,8 +25,15 @@ export default (path: NodePath<t.ObjectProperty | t.ObjectMethod>, context: Tran
             });
         }
 
-        context.usedHelpers.add('defineProps');
-        return `const props = defineProps(${generate(value.node).code});`;
+
+        if (type === 'component') {
+            context.usedHelpers.add('defineProps');
+            return `const props = defineProps(${generate(value.node).code});`;
+        } else if (type === 'composable') {
+            context.globalStatements.push(`export const USE_XXX_PROPS = ${generate(value.node).code};`);
+
+            return ''
+        }
     }
     return '';
 };

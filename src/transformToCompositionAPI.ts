@@ -6,13 +6,14 @@ import { readdirSync } from 'fs';
 import { basename, extname, join } from 'path';
 
 // Define the Transformation type
-type Transformation = (path: NodePath<t.ObjectProperty | t.ObjectMethod>, context: TransformationContext) => string;
+type Transformation = (path: NodePath<t.ObjectProperty | t.ObjectMethod>, context: TransformationContext, type: 'component' | 'composable') => string;
 
 export interface TransformationContext {
   refIdentifiers: Set<string>;
   functionIdentifiers: Set<string>;
   usedHelpers: Set<string>;
   propIdentifiers: Set<string>;
+  globalStatements: string[]
 }
 
 // Initialize componentOptions with transformations loaded from files
@@ -52,11 +53,12 @@ export function transformToCompositionAPI(scriptContent: string, type: 'componen
     functionIdentifiers,
     usedHelpers,
     propIdentifiers,
+    globalStatements
   };
 
   traverse(ast, {
     Statement(path) {
-      if (path.parentPath.isProgram() && !path.isExportDefaultDeclaration()) {
+      if(path.parentPath.isProgram() && !path.isExportDefaultDeclaration()) {
         globalStatements.push(generate(path.node).code);
       }
     },
@@ -76,7 +78,7 @@ export function transformToCompositionAPI(scriptContent: string, type: 'componen
               if (option) {
                 const propertyPath = path.get(`declaration.arguments.0.properties.${index}`) as NodePath<t.ObjectProperty | t.ObjectMethod>;
                 try {
-                  scriptSetupLines.push(option(propertyPath, context));
+                  scriptSetupLines.push(option(propertyPath, context, type));
                 } catch (error) {
                   if (error instanceof Error) {
                     console.error(`Error transforming property ${name}:`, error.message);
@@ -107,7 +109,7 @@ export function transformToCompositionAPI(scriptContent: string, type: 'componen
     Identifier(path) {
       if (
         context.refIdentifiers.has(path.node.name) &&
-        !((t.isMemberExpression(path.parent) || t.isOptionalMemberExpression(path.parent)) && (t.isIdentifier(path.parent.property, { name: 'value' }) || t.isIdentifier(path.parent.property, { name: path.node.name }))) &&
+        !((t.isMemberExpression(path.parent) || t.isOptionalMemberExpression(path.parent)) && t.isIdentifier(path.parent.property, { name: 'value' })) &&
         !(path.parentPath.isVariableDeclarator() && path.parentPath.get('id') === path)
       ) {
         path.replaceWith(t.memberExpression(path.node, t.identifier('value')));
@@ -179,7 +181,7 @@ ${Array.from(functionIdentifiers).map(func => `    ${func}`).join(',\n')}
     const functionName = 'useXXX';
     return `
 ${[...importStatementsVue, ...globalStatements].join('\n')}
-export default function ${functionName}() {
+export default function ${functionName}(props) {
 ${scriptSetup}
 ${returnStatement}
 }
