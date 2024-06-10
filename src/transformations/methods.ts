@@ -9,11 +9,12 @@ export default (path: NodePath<t.ObjectProperty | t.ObjectMethod>, context: Tran
     return properties.map(prop => {
         if (prop.isObjectMethod()) {
             const methodName = (prop.node.key as t.Identifier).name;
+            const isAsync = prop.node.async;
             removeThisReferences(prop.get('body') as NodePath<t.BlockStatement>);
             const methodBody = prop.node.body;
             const params = prop.node.params.map(param => generate(param).code).join(', ');
             context.functionIdentifiers.add(methodName); // Add function identifier to context
-            return `function ${methodName}(${params}) ${generate(methodBody).code}`;
+            return `${isAsync ? 'async ' : ''}function ${methodName}(${params}) ${generate(methodBody).code}`;
         }
         return '';
     }).join('\n');
