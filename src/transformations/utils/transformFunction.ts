@@ -23,10 +23,11 @@ export function transformFunctionBody(path: NodePath<t.ObjectProperty | t.Object
     return functionBody.node;
 }
 
-export function generateFunctionCall(hook: string, functionBody: t.BlockStatement): string {
+export function generateFunctionCall(hook: string, functionBody: t.BlockStatement, isAsync: boolean): string {
     const generatedCode = generate(functionBody).code;
+    const asyncKeyword = isAsync ? "async " : "";
     if (!generatedCode.startsWith('{')) {
-        return `${hook}(() => { ${generatedCode} });`;
+        return `${hook}(${asyncKeyword}() => { ${generatedCode} });`;
     }
-    return `${hook}(() => ${generatedCode});`;
+    return `${hook}(${asyncKeyword}() => ${generatedCode});`;
 }

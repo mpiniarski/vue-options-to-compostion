@@ -22,3 +22,26 @@ describe('transformToCompositionAPI - BeforeUpdate Transformations', () => {
         `);
     });
 });
+
+    it('transforms async beforeUpdate lifecycle hook', () => {
+        const optionsAPIScript = given(`
+            export default defineComponent({
+                async beforeUpdate() {
+                    await fetchData();
+                    console.log('Component before update');
+                }
+            });
+        `);
+
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
+
+        thenExpect(compositionAPIScript).toEqualScript(`
+            <script setup>
+            import { onBeforeUpdate } from 'vue';
+            onBeforeUpdate(async () => {
+                await fetchData();
+                console.log('Component before update');
+            });
+            </script>
+        `);
+    });

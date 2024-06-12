@@ -22,3 +22,26 @@ describe('transformToCompositionAPI - Updated Transformations', () => {
         `);
     });
 });
+
+    it('transforms async updated lifecycle hook', () => {
+        const optionsAPIScript = given(`
+            export default defineComponent({
+                async updated() {
+                    await fetchData();
+                    console.log('Component updated');
+                }
+            });
+        `);
+
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
+
+        thenExpect(compositionAPIScript).toEqualScript(`
+            <script setup>
+            import { onUpdated } from 'vue';
+            onUpdated(async () => {
+                await fetchData();
+                console.log('Component updated');
+            });
+            </script>
+        `);
+    });

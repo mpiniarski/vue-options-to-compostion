@@ -5,6 +5,7 @@ import {TransformationContext} from "../transformToCompositionAPI";
 
 export default (path: NodePath<t.ObjectProperty | t.ObjectMethod>, context: TransformationContext): string => {
     const functionBody = transformFunctionBody(path);
+    const isAsync = t.isObjectMethod(path.node) && path.node.async;
     context.usedHelpers.add('onBeforeMount');
-    return generateFunctionCall('onBeforeMount', functionBody);
+    return generateFunctionCall('onBeforeMount', functionBody, isAsync);
 };
