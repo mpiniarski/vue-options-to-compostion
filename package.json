@@ -5,7 +5,8 @@
   "scripts": {
     "build": "tsc",
     "start": "ts-node src/index.ts",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "pbcopy": "tools/pbcopydir.sh package.json tsconfig.json jest.config.js README.md src/"
   },
   "dependencies": {
     "@babel/generator": "^7.24.5",
