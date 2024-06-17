@@ -39,6 +39,12 @@ export default (path: NodePath<t.ObjectProperty | t.ObjectMethod>, context: Tran
             } else {
                 console.error(`Handler property not found in object properties: ${generate(prop.node)}`);
             }
+        } else if (t.isObjectProperty(prop.node) && t.isStringLiteral(prop.node.key) && t.isFunctionExpression(prop.node.value)) {
+            const watchName = prop.node.key.value;
+            const handlerBody = prop.get('value.body') as NodePath<t.BlockStatement>;
+            removeThisReferences(handlerBody);
+            context.usedHelpers.add('watch');
+            return `watch(() => ${watchName}, (newValue, oldValue) => ${generate(handlerBody.node).code});`;
         }
         return `// Unhandled property type: ${generate(prop.node)}`;
     });

@@ -86,3 +86,27 @@ describe('transformToCompositionAPI - Watch Transformations', () => {
         `);
     });
 });
+
+    it('transforms watch properties with string key correctly', () => {
+        const optionsAPIScript = given(`
+            export default defineComponent({
+                watch: {
+                    'message': function(newValue, oldValue) {
+                        console.log('Message changed from', oldValue, 'to', newValue);
+                    }
+                }
+            });
+        `);
+
+        const compositionAPIScript = whenScriptIsTransformedToComponent(optionsAPIScript);
+
+        thenExpect(compositionAPIScript).toEqualScript(`
+            <script setup>
+            import { watch } from 'vue';
+            watch(() => message, (newValue, oldValue) => {
+                console.log('Message changed from', oldValue, 'to', newValue);
+            });
+            </script>
+        `);
+    });
+
