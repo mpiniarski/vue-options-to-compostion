@@ -137,6 +137,13 @@ export function transformToCompositionAPI(scriptContent: string, type: 'componen
       if (path.node.name === '$nextTick') {
         path.replaceWith(t.identifier('nextTick'));
       }
+      if (path.node.name === '$options' && path.parentPath.isMemberExpression()) {
+        const parent = path.parentPath.node as t.MemberExpression;
+        if (t.isIdentifier(parent.property, { name: 'name' })) {
+          path.parentPath.replaceWith(t.identifier('componentName'));
+          context.usedHelpers.add('getCurrentInstance')
+        }
+      }
     },
     MemberExpression(memberPath) {
       if (
@@ -157,6 +164,11 @@ export function transformToCompositionAPI(scriptContent: string, type: 'componen
 
   if (hasElReference) {
     refDeclarations.unshift('// TODO: add this ref to root element in the template', 'const root = ref<HTMLElement>();');
+  }
+
+  if (context.usedHelpers.has('getCurrentInstance')) {
+    scriptSetupLines.unshift('import { getCurrentInstance } from \'vue\';');
+    refDeclarations.unshift('const componentName = getCurrentInstance()?.type.__name;');
   }
 
   const importStatementsVue = usedHelpers.size ? [`import { ${[...usedHelpers].join(', ')} } from 'vue';`] : [];
